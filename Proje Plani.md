@@ -73,7 +73,7 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - [x] **Aşama 2 – Modeller + seeder:** tablolar, ilişkiler, bölgeler, örnek egzersizler
 - [x] **Aşama 3 – Auth:** kayıt/giriş, bcryptjs + JWT, auth ve rol middleware
 - [x] **Aşama 4 – Profil/anket + egzersiz kütüphanesi uçları** (sadece `approved`)
-- [ ] **Aşama 5 – Risk + clinicalFilter + kural tabanlı plan üretimi** (AI'sız tam akış)
+- [x] **Aşama 5 – Risk + clinicalFilter + kural tabanlı plan üretimi** (AI'sız tam akış)
 - [ ] **Aşama 6 – Feedback + plan askıya alma**, günlük/haftalık plan listeleme
 - [ ] **Aşama 7 – Test, güvenlik sertleştirme, API dokümanı**
 - [ ] **Aşama 8 – Gerçek AI entegrasyonu** (`AiProvider` arkasına)
@@ -81,11 +81,14 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - [ ] **Aşama 10 – Video içerikleri, SUS testi, sonuç raporu**
 
 ## 7. Nerede Kaldık?
-- Durum: Aşama 1-4 tamam, gerçek isteklerle doğrulandı. Docker MySQL **3308** portunda (3306 yerel mysqld, 3307 başka proje kullanıyor).
-- Çalışan uçlar: `/health`, `/auth/register|login|me`, `/profile` (GET/PUT), `/regions`, `/exercises`. Tablolar dev modunda `syncDatabase()` ile oluşur; `npm run db:seed` 4 bölge + 12 örnek egzersiz yükler.
+- Durum: Aşama 1-5 tamam, gerçek isteklerle doğrulandı. Docker MySQL **3308** portunda (3306 yerel mysqld, 3307 başka proje kullanıyor).
+- Repo: https://github.com/fehmi-gunay/fizyoterapi-projesi (gizli). Her aşama sonunda commit + push.
+- Çalışan uçlar: `/health`, `/auth/register|login|me`, `/profile` (GET/PUT), `/regions`, `/exercises`, `/plans/generate`, `/plans/:id`, `/plans/:id/activate`.
+- Aşama 5 yapısı: `config/clinical.ts` (eşikler + kırmızı bayrak kodları, **taslak**), `riskService` → `planService.selectCandidates` (bölge + onay + kontrendikasyon + şiddete göre zorluk) → `aiService` (`AiProvider`, zaman aşımı, zod şema kontrolü) → `clinicalFilter` (Denklem 1) → taslak plan. Onayda risk yeniden kontrol edilir; önceki aktif plan `completed` olur.
+- `/plans/generate` yanıtı: riskli/değerlendirilemedi → 200 `{outcome:"referral", riskLevel, reasons}`; başarılı → 201 `{outcome:"created", plan, rejected}`; uygun öneri yok → 422 `NO_SUITABLE_*`; öneri hatası/şema/zaman aşımı → 502/504.
 - Başlatma: `npm run db:up` → `npm run dev` (backend klasöründe).
 - Bilinen küçük konu: `weightKg` yanıtta string ("72.0", DECIMAL) dönüyor.
-- Sıradaki adım: Aşama 5 (risk + clinicalFilter + kural tabanlı plan üretimi).
+- Sıradaki adım: Aşama 6 (feedback + askıya alma (Denklem 2), `GET /plans` günlük/haftalık listeleme).
 
 ## 8. Açık Konular
 - AI sağlayıcısı (hangi hazır model/API?) – Aşama 8'de kararlaştırılacak.
@@ -98,3 +101,5 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 |---|---|
 | 2026-10-27 | Backend Node + Express + TypeScript, MySQL (Docker), Sequelize; frontend React + TS |
 | 2026-10-27 | AI entegrasyonu sonraya bırakıldı; `AiProvider` arayüzü + kural tabanlı yedek |
+| 2026-10-27 | Kod GitHub'da gizli repoda; her aşama sonunda commit + push (geri dönüş noktası) |
+| 2026-10-27 | Risk: kırmızı bayrak, yaş >75, VKİ 16-40 dışı, ağrı ≥8 → uzman yönlendirmesi (taslak, uzman onayı bekliyor) |

@@ -21,6 +21,9 @@ export class ApiError extends Error {
   static conflict(message: string) {
     return new ApiError(409, 'CONFLICT', message);
   }
+  static unprocessable(code: string, message: string, details?: unknown) {
+    return new ApiError(422, code, message, details);
+  }
   static notFound(message = 'Kayıt bulunamadı') {
     return new ApiError(404, 'NOT_FOUND', message);
   }
