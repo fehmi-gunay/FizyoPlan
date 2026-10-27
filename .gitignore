@@ -1,0 +1,17 @@
+# Bağımlılıklar ve derleme çıktıları
+node_modules/
+dist/
+
+# Gizli bilgiler (şablon: backend/.env.example)
+.env
+.env.*
+!.env.example
+
+# Loglar
+*.log
+
+# Editör / işletim sistemi
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
