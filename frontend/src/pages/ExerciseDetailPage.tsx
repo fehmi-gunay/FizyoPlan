@@ -97,6 +97,12 @@ export default function ExerciseDetailPage() {
   const [pain, setPain] = useState(0);
   const [difficulty, setDifficulty] = useState(3);
   const [result, setResult] = useState<FeedbackResult | null>(null);
+  // Bugünün başlangıcı sayfa açılışında bir kez hesaplanır (render saf kalsın)
+  const [startOfToday] = useState(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
 
   const feedback = useMutation({
     mutationFn: () => sendFeedback(itemId!, { pain, difficulty }),
@@ -122,8 +128,6 @@ export default function ExerciseDetailPage() {
 
   const e = exercise.data;
   const steps = splitSteps(e.description);
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
   const todayFeedback = item?.feedback?.filter((f) => new Date(f.createdAt) >= startOfToday) ?? [];
   const lastToday = todayFeedback.at(-1);
   const canGiveFeedback = !!item && plan.data?.status === 'active';

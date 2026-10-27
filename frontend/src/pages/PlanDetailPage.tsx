@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError, errorMessage } from '../api/client';
 import { activatePlan, getPlan, getToday, qk } from '../api/endpoints';
@@ -19,12 +19,9 @@ export default function PlanDetailPage() {
   const isActive = plan.data?.status === 'active';
   const today = useQuery({ queryKey: qk.today(), queryFn: () => getToday(), enabled: isActive });
   const todayDay = isActive && today.data?.plan?.id === id ? today.data.day : null;
-  const [day, setDay] = useState(1);
-
-  // Aktif haftalık planda bugünün sekmesiyle aç
-  useEffect(() => {
-    if (todayDay) setDay(todayDay);
-  }, [todayDay]);
+  // Kullanıcı sekme seçmediyse aktif haftalık planda bugünün sekmesiyle aç
+  const [pickedDay, setDay] = useState<number | null>(null);
+  const day = pickedDay ?? todayDay ?? 1;
 
   const activate = useMutation({
     mutationFn: () => activatePlan(id),

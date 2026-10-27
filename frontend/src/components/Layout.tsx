@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router';
-import { useAuth } from '../context/AuthContext';
-import { usePreferences } from '../context/PreferencesContext';
+import { useAuth } from '../context/useAuth';
+import { usePreferences } from '../context/usePreferences';
 import { Button } from './ui';
 
 export const DISCLAIMER = 'Bu uygulama tanı koymaz, muayenenin yerini almaz. Şikâyetiniz artarsa egzersizi bırakıp bir uzmana başvurun.';

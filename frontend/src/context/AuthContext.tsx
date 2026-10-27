@@ -1,19 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api, ApiError, tokenStore, UNAUTHORIZED_EVENT } from '../api/client';
 import type { AuthResponse, User } from '../types/api';
-
-type Status = 'loading' | 'authenticated' | 'anonymous';
-
-interface AuthValue {
-  user: User | null;
-  status: Status;
-  login(email: string, password: string): Promise<User>;
-  register(email: string, password: string): Promise<User>;
-  logout(): void;
-}
-
-const AuthContext = createContext<AuthValue | null>(null);
+import { AuthContext, type AuthValue, type Status } from './useAuth';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
@@ -68,10 +57,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth(): AuthValue {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth, AuthProvider içinde kullanılmalı');
-  return ctx;
 }

@@ -5,7 +5,7 @@ import { adminKeys, listUsers, updateUserRole, type AdminUser } from '../../api/
 import { errorMessage } from '../../api/client';
 import { AdminNav } from '../../components/admin/AdminNav';
 import { Alert, Badge, EmptyState, ErrorState, LoadingState, PageHeader } from '../../components/ui';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { formatDate, ROLE_LABELS } from '../../lib/labels';
 import type { Role } from '../../types/api';
 

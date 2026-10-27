@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Controller, useForm, type FieldPath } from 'react-hook-form';
+import { Controller, useForm, useWatch, type FieldPath } from 'react-hook-form';
 import { Link, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { ApiError, errorMessage } from '../api/client';
@@ -82,13 +82,14 @@ function SurveyForm({ profile }: { profile: Profile | null }) {
   const [saved, setSaved] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
+  // Doğum tarihi en fazla bugün olabilir (yerel tarih; toISOString UTC'ye göre bir gün geride kalabilir)
+  const [today] = useState(() => new Date().toLocaleDateString('en-CA'));
 
   const {
     register,
     control,
     handleSubmit,
     trigger,
-    watch,
     formState: { errors },
   } = useForm<FormIn, unknown, FormOut>({ resolver: zodResolver(schema), defaultValues: toDefaults(profile), mode: 'onTouched' });
 
@@ -129,7 +130,7 @@ function SurveyForm({ profile }: { profile: Profile | null }) {
     });
   });
 
-  const values = watch();
+  const values = useWatch({ control }) as FormIn;
   const hasRedFlag = RED_FLAG_QUESTIONS.some((q) => values.redFlagAnswers?.[q.code] === 'yes');
 
   if (saved) return <SavedScreen returnPath={returnPath} hasRedFlag={hasRedFlag} headingRef={headingRef} />;
@@ -164,7 +165,7 @@ function SurveyForm({ profile }: { profile: Profile | null }) {
           {step === 0 && (
             <div className="stack">
               <Field label="Doğum tarihi" hint={`${MIN_AGE} yaş ve üzeri`} error={errors.birthDate?.message}>
-                <input className="input" type="date" max={new Date().toISOString().slice(0, 10)} {...register('birthDate')} />
+                <input className="input" type="date" max={today} {...register('birthDate')} />
               </Field>
               <div className="grid-2">
                 <Field label="Boy (cm)" error={errors.heightCm?.message}>

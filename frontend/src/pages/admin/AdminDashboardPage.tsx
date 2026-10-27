@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { adminKeys, AUDIT_ACTION_LABELS, getAuditLogs, getStats, summarizeUserAgent } from '../../api/admin';
 import { AdminNav } from '../../components/admin/AdminNav';
 import { Alert, Badge, Card, ErrorState, LoadingState, PageHeader } from '../../components/ui';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { formatDate, ROLE_LABELS } from '../../lib/labels';
 
 function Stat({ label, value, sub, tone }: { label: string; value: number; sub?: string; tone?: 'warn' | 'danger' }) {

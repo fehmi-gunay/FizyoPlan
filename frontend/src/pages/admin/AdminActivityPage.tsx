@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router';
 import { adminKeys, AUDIT_ACTION_LABELS, getAuditLogs, summarizeUserAgent, type AuditAction, type AuditFilters, type AuditLog } from '../../api/admin';
 import { AdminNav } from '../../components/admin/AdminNav';
@@ -7,6 +7,13 @@ import { Alert, Badge, Button, EmptyState, ErrorState, LoadingState, PageHeader 
 import { formatDate, ROLE_LABELS } from '../../lib/labels';
 
 const PAGE_SIZE = 25;
+
+const draftFrom = (params: URLSearchParams) => ({
+  action: params.get('islem') ?? '',
+  email: params.get('eposta') ?? '',
+  from: params.get('baslangic') ?? '',
+  to: params.get('bitis') ?? '',
+});
 
 function describeMeta(log: AuditLog): string {
   const m = log.meta;
@@ -32,10 +39,13 @@ export default function AdminActivityPage() {
   };
 
   // Form taslağı; "Filtrele" ile URL'ye yazılır
-  const [draft, setDraft] = useState({ action: '', email: '', from: '', to: '' });
-  useEffect(() => {
-    setDraft({ action: params.get('islem') ?? '', email: params.get('eposta') ?? '', from: params.get('baslangic') ?? '', to: params.get('bitis') ?? '' });
-  }, [params]);
+  // (URL değişince, örn. geri tuşu veya "Temizle", taslak URL'den yeniden okunur)
+  const [draft, setDraft] = useState(() => draftFrom(params));
+  const [draftParams, setDraftParams] = useState(params);
+  if (draftParams !== params) {
+    setDraftParams(params);
+    setDraft(draftFrom(params));
+  }
 
   const logs = useQuery({
     queryKey: adminKeys.logs(filters),

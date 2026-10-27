@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import '../../styles/admin.css';
 
 // Yönetim sayfalarının alt menüsü. Kullanıcılar ve kayıtlar yalnızca admin rolüne açık.

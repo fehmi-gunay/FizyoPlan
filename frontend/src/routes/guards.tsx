@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { LoadingState } from '../components/ui';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import type { Role } from '../types/api';
 
 // Giriş yapmamış kullanıcıyı /giris'e yollar, döndükten sonra geldiği sayfaya geri götürür.

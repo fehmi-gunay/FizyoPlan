@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { errorMessage } from '../api/client';
 import { Field } from '../components/form';
 import { Alert, Button, Card } from '../components/ui';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 const schema = z.object({
   email: z.email('Geçerli bir e-posta girin'),

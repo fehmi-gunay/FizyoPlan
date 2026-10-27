@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { ApiError, errorMessage } from '../api/client';
 import { Field } from '../components/form';
 import { Alert, Button, Card } from '../components/ui';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 // Backend kuralıyla aynı: 8-72 karakter, en az bir harf ve bir rakam
 const schema = z
