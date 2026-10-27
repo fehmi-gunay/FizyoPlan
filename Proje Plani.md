@@ -32,8 +32,7 @@ Kullanıcıların yaş, boy, kilo, günlük aktivite düzeyi ve ağrı bölgesi 
 
 ## 3. Backend Klasör Yapısı
 ```
-backend/
-├─ docker-compose.yml
+backend/                   # docker-compose.yml artık kök dizinde (mysql + backend + frontend)
 ├─ package.json  tsconfig.json  .env.example  .gitignore
 ├─ src/
 │  ├─ server.ts            # DB bağlan + listen
@@ -79,17 +78,21 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - [x] **Aşama 6 – Feedback + plan askıya alma**, günlük/haftalık plan listeleme
 - [x] **Aşama 7 – Test, güvenlik sertleştirme, API dokümanı** (+ uzman/admin egzersiz yönetimi)
 - [ ] **Aşama 8 – Gerçek AI entegrasyonu** (`AiProvider` arkasına)
-- [x] **Aşama 9 – React + TS frontend** (bkz. `Tasarim Plani.md`) — ilk sürüm; tarayıcıda görsel kontrol ve geri bildirimle iyileştirme sürüyor
+- [x] **Aşama 9 – React + TS frontend** (bkz. `Tasarim Plani.md`) — ilk prototip çalışıyor; masaüstü görsel kontrol yapıldı (2026-10-27)
+- [ ] **Aşama 9b – Tasarım iyileştirmeleri + e-posta:** yazı boyutu ayarı yalnızca Ayarlar'da, şifremi unuttum (e-posta kodu), kayıt bildirimi e-postası, Mailpit; mobil/tema kontrolü (ayrıntı: `Tasarim Plani.md` §6)
 - [ ] **Aşama 10 – Video içerikleri, SUS testi, sonuç raporu**
 
 ## 7. Nerede Kaldık?
-- Durum: **Çalışan web sitesi Docker'da** — backend (Aşama 1-7) + frontend (Aşama 9) + admin paneli (giriş/aktivite kayıtları). 158 backend testi geçiyor.
+- Durum: **İlk prototip çalışıyor, Docker'da** — backend (Aşama 1-7) + frontend (Aşama 9) + admin paneli (giriş/aktivite kayıtları). 158 backend testi geçiyor. Üç container da `healthy`.
+- 2026-10-27 görsel kontrol (Claude in Chrome, masaüstü): kayıt → anket → plan oluştur/onayla → bugünün egzersizleri akışı hatasız. Düzeltilen: frontend healthcheck (IPv6/localhost), anket soru numarası hizası (commit `05b521c`).
 - Repo: https://github.com/fehmi-gunay/FizyoPlan (**herkese açık**). `main` korumalı: ekip dal açıp PR gönderir, yalnızca proje sahibi onaylayıp birleştirir. Her PR'da CI (backend testleri + frontend derleme). Akış: `CONTRIBUTING.md`.
 - Docker (kök `docker-compose.yml`, proje `fizyoplan`): `fizyoplan_mysql` (:3308), `fizyoplan_backend` (:4001, açılışta seed + DB_SYNC), `fizyoplan_frontend` (nginx, **http://localhost:8080**). Ayarlar kök `.env` (şablon `.env.example`).
 - Geliştirme: `docker compose up -d mysql` → `backend: npm run dev` (:4000) + `frontend: npm run dev` (:5173). `backend/.env` DB_* değerleri kök `.env` ile aynı.
 - Admin: `admin@fizyo.local` (parola kök `.env` → `SEED_ADMIN_PASSWORD`).
-- Açık iş: tarayıcıda görsel kontrol (mobil, koyu tema, yüksek kontrast) — Claude in Chrome bağlanınca yapılacak.
-- Sıradaki: görsel düzeltmeler → Aşama 8 (AI + animasyon videoları, kişiye göre filtreleyip program oluşturan model) → Aşama 10.
+- Veritabanını görmek: DBeaver / MySQL Workbench → `127.0.0.1:3308`, kullanıcı `fizyoplan`, parola kök `.env` → `DB_PASSWORD`.
+- Ekip: arkadaşlar GitHub → Settings → Collaborators ile eklenecek (henüz yalnızca proje sahibi var).
+- Açık iş: görsel kontrolün devamı (mobil, koyu tema, yüksek kontrast, admin paneli).
+- Sıradaki: **Aşama 9b** (`Tasarim Plani.md` §6) → Aşama 8 (AI + animasyon videoları, kişiye göre filtreleyip program oluşturan model) → Aşama 10.
 
 ## 8. Açık Konular
 - AI sağlayıcısı (hangi hazır model/API?) – Aşama 8'de kararlaştırılacak.
@@ -98,6 +101,7 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - Egzersiz onayı kaldırılır/düzenlenirse mevcut aktif planlardaki kalemler etkilenmiyor — uzmanla konuşulmalı (planı askıya alma?).
 - Askıdan sonra yeni plan: anketin yeniden doldurulması şartı var; uzman ayrıca bekleme süresi isteyebilir.
 - Production: HTTPS (sunucuda ters vekil/sertifika), Docker'daki `DB_SYNC` yerine migration.
+- E-posta gönderim servisi (canlı ortam): Brevo / Resend / başka SMTP? Geliştirmede Mailpit yeterli. Gönderen adres/alan adı da belirlenmeli.
 - Veri güvenliği: sağlık verisi (KVKK) – şifreleme, yetkilendirme, bulut depolama (PDF risk tablosu).
 
 ## 9. Karar Günlüğü
@@ -114,3 +118,5 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 | 2026-10-27 | Proje adı **FizyoPlan**; Docker Compose ile mysql + backend + frontend (YapYaptır yapısı örnek alındı) |
 | 2026-10-27 | Repo herkese açık; `main` korumalı (PR + proje sahibinin onayı), CI zorunlu |
 | 2026-10-27 | Risk: kırmızı bayrak, yaş >75, VKİ 16-40 dışı, ağrı ≥8 → uzman yönlendirmesi (taslak, uzman onayı bekliyor) |
+| 2026-10-27 | Yazı boyutu ayarı yalnızca Profil → Ayarlar'da; üst menüdeki A−/A+ kaldırılacak |
+| 2026-10-27 | Şifre sıfırlama e-postaya gelen kodla; kayıt sonrası bildirim e-postası. Geliştirmede Mailpit, canlı SMTP servisi sonra seçilecek |

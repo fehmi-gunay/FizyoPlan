@@ -11,6 +11,7 @@ flowchart LR
   A --> AI{{AiProvider arayüzü}}
   AI --> R[Kural tabanlı yedek - şimdi]
   AI --> X[Hazır AI API - sonra]
+  A -.->|SMTP - planlandı| M[E-posta<br/>geliştirme: Mailpit / canlı: SMTP servisi]
 ```
 
 > Docker Compose projesi `fizyoplan`: üç container aynı `fizyoplan_net` ağında. Geliştirmede yalnızca MySQL Docker'da, backend/frontend `npm run dev` ile çalışır.
@@ -53,6 +54,8 @@ Klinik uygunluk (Denklem 1): egzersiz onaylı kütüphanede **ve** kontrendikasy
 | POST | `/plans/:id/activate` | Kullanıcı onayı | user |
 | POST | `/plan-items/:id/feedback` | Ağrı/zorluk bildirimi (askıya alma tetikler) | user |
 | POST/PUT | `/admin/exercises` | Egzersiz ekle/onayla | admin/physio |
+| POST | `/auth/forgot-password` | Sıfırlama kodunu e-postaya gönder (**planlandı**, bkz. §6) | – |
+| POST | `/auth/reset-password` | Kod + yeni parola → parola yenilenir, oturum açılır (**planlandı**) | – |
 
 Hata formatı: `{ "error": { "code": "VALIDATION_ERROR", "message": "…", "details": [...] } }`
 
@@ -60,13 +63,13 @@ Hata formatı: `{ "error": { "code": "VALIDATION_ERROR", "message": "…", "deta
 **Teknoloji:** Vite + React + TS, React Router, TanStack Query (API), React Hook Form + zod (anket formu), Bootstrap/Tailwind (PDF: responsive, Bootstrap).
 
 ### Sayfalar
-1. **Giriş / Kayıt**
+1. **Giriş / Kayıt** (+ **Şifremi unuttum**: e-posta → kod → yeni parola; planlandı, bkz. §6)
 2. **Sağlık Anketi** (çok adımlı): kişisel bilgi (yaş, boy, kilo) → aktivite düzeyi → ağrı bölgesi seçimi (vücut şeması: bel, boyun, omuz, diz) ve şiddet → kırmızı bayrak soruları
 3. **Uzman Yönlendirme Ekranı** (riskli sonuç; plan yok, açık uyarı metni)
 4. **Planlarım**: haftalık görünüm (7 gün kartları) + günlük detay
 5. **Egzersiz Detay**: video, adım adım metin, set/tekrar/süre, "Tamamladım" + ağrı/zorluk geri bildirimi
 6. **Plan Askıya Alındı** ekranı (yeniden değerlendirme / uzmana yönlendirme)
-7. **Profil / Ayarlar**: bilgi güncelleme, yazı boyutu, yüksek kontrast
+7. **Profil / Ayarlar**: bilgi güncelleme, yazı boyutu (tek yer burası olacak), yüksek kontrast
 8. (Sonra) **Uzman paneli**: egzersiz onay/ekleme
 
 ### Önerilen klasör yapısı
@@ -82,7 +85,7 @@ frontend/src/
 ```
 
 ### UX ve Erişilebilirlik (PDF hedef 5)
-- Dinamik yazı boyutu (A-/A+) ve yüksek kontrast modu; WCAG AA kontrast.
+- Dinamik yazı boyutu ve yüksek kontrast modu; WCAG AA kontrast. Yazı boyutu ayarı üst menüdeki A-/A+ yerine yalnızca Profil → Ayarlar'da (planlandı, §6).
 - Klavye ile gezinme, ARIA etiketleri, form hata mesajları ekran okuyucuya uygun.
 - Mobil öncelikli responsive tasarım; büyük dokunma hedefleri (≥44px).
 - Her ekranda görünür uyarı: "Bu uygulama tanı koymaz, muayenenin yerini almaz."
@@ -97,3 +100,25 @@ Sakin, güven veren sağlık teması: açık zemin, tek vurgu rengi (teal/mavi),
 - Sağlık verisi: yalnızca sahibi ve yetkili rol görür; loglara sağlık verisi yazılmaz.
 - İhlal şüphesinde servis durdurma, oturum anahtarı ve parola sıfırlama (PDF risk tablosu).
 - AI'a minimum veri gönderilir (kimlik bilgisi yok; yaş aralığı, bölge, onaylı egzersiz ID'leri).
+
+## 6. Prototip Geri Bildirimi ve Sıradaki Tasarım İşleri
+> İlk prototip Docker'da uçtan uca çalışıyor (2026-10-27, Claude in Chrome ile masaüstü görsel kontrol: giriş → kayıt → anket → plan oluşturma/onay → bugünün egzersizleri).
+
+### Görsel kontrolde düzeltilenler (2026-10-27)
+- [x] Frontend container'ı `unhealthy` görünüyordu: healthcheck `localhost` → `127.0.0.1` (Alpine'de `::1`'e çözülüyordu, nginx yalnızca IPv4 dinliyor).
+- [x] Anket 4. adım: soru numaraları Evet/Hayır satırına kayıyordu → CSS sayacıyla soru başlığının (legend) içine alındı.
+
+### Yapılacaklar (proje sahibinin ilk gözlemleri)
+- [ ] **Yazı boyutu kontrolü:** üst menüdeki A− / A+ düğmeleri kaldırılır; ayar yalnızca Profil → Ayarlar'da kalır (tercih yine kaydedilir ve tüm sayfalara uygulanır).
+- [ ] **Şifremi unuttum** (giriş ekranında bağlantı):
+  1. Kullanıcı e-postasını girer → 6 haneli kod e-postaya gönderilir.
+  2. Kod + yeni parola (+ tekrar) girilir → parola yenilenir ve kullanıcı **doğrudan giriş yapmış olur**.
+  - Güvenlik: kod veritabanında **hash'li** saklanır, 10–15 dk geçerli, tek kullanımlık; deneme sayısı ve istek sıklığı sınırlı (rate limit); kayıtlı olmayan e-postada da aynı yanıt verilir (hesap var mı bilgisi sızmaz); parola yenilenince eski oturumlar geçersiz olur; olay giriş/aktivite kayıtlarına yazılır.
+  - Yeni sayfalar: `/sifremi-unuttum` (e-posta) → `/sifre-yenile` (kod + yeni parola).
+- [ ] **Kayıt bildirimi e-postası:** yeni kayıtta "FizyoPlan'a hoş geldiniz / kaydoldunuz" e-postası (sağlık verisi içermez).
+- [ ] **E-posta altyapısı:** backend'de tek `mailService` (nodemailer, SMTP ayarları `.env`'den).
+  - Geliştirme: Docker Compose'a **Mailpit** container'ı — e-posta dışarı gitmez, http://localhost:8025 adresinde görüntülenir.
+  - Canlı: Brevo / Resend vb. SMTP servisi (karar bekliyor, bkz. `Proje Plani.md` §8).
+  - E-posta şablonları Türkçe, sade, uygulamanın renkleriyle; tanı/sağlık bilgisi içermez.
+- [ ] Görsel kontrolün devamı: **mobil** genişlik, koyu/açık tema, yüksek kontrast, admin paneli.
+- [ ] (Küçük) Aktivite kartlarında radyo düğmesi ile başlık arası boşluk biraz dar — gözden geçirilecek.
