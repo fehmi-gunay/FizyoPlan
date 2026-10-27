@@ -3,6 +3,15 @@ import { sequelize } from '../config/database';
 import { BodyRegion, Exercise, ExerciseContraindication, ExerciseRegion, User } from '../models';
 import { UserRole } from '../models/User';
 import { ApiError } from '../utils/ApiError';
+import { logEvent, RequestContext } from './auditService';
+
+// İşlemi yapan uzman/admin (aktivite kaydı için)
+export interface Actor extends RequestContext {
+  id: number;
+}
+
+const audit = (actor: Actor | undefined, action: Parameters<typeof logEvent>[0]['action'], meta: Record<string, unknown>) =>
+  actor ? logEvent({ action, userId: actor.id, ip: actor.ip, userAgent: actor.userAgent, meta }) : Promise.resolve();
 import { AdminExerciseQuery, CreateExerciseInput, UpdateExerciseInput } from '../validators/admin.validators';
 
 const includes = (region?: string) => [
@@ -55,7 +64,7 @@ async function writeRelations(
 }
 
 // Yeni egzersiz onaysız başlar; kullanıcıya ancak uzman onayından sonra görünür.
-export async function createExercise(input: CreateExerciseInput) {
+export async function createExercise(input: CreateExerciseInput, actor?: Actor) {
   const { regionCodes, contraindications, ...fields } = input;
   const id = await sequelize.transaction(async (transaction) => {
     const exercise = await Exercise.create(
@@ -65,11 +74,12 @@ export async function createExercise(input: CreateExerciseInput) {
     await writeRelations(exercise.id, { regionCodes, contraindications }, transaction);
     return exercise.id;
   });
+  await audit(actor, 'exercise_create', { exerciseId: id, title: fields.title });
   return getExerciseOrFail(id);
 }
 
 // Güvenlik: onaylı içerik değişince yeniden uzman onayı gerekir.
-export async function updateExercise(id: number, input: UpdateExerciseInput) {
+export async function updateExercise(id: number, input: UpdateExerciseInput, actor?: Actor) {
   const exercise = await getExerciseOrFail(id);
   const { regionCodes, contraindications, ...fields } = input;
 
@@ -85,12 +95,14 @@ export async function updateExercise(id: number, input: UpdateExerciseInput) {
     await exercise.update({ ...fields, approved: false, approvedBy: null }, { transaction });
     await writeRelations(id, { regionCodes, contraindications }, transaction);
   });
+  await audit(actor, 'exercise_update', { exerciseId: id, title: exercise.title });
   return getExerciseOrFail(id);
 }
 
-export async function setApproval(id: number, approved: boolean, approverId: number) {
+export async function setApproval(id: number, approved: boolean, actor: Actor) {
   const exercise = await getExerciseOrFail(id);
-  await exercise.update({ approved, approvedBy: approved ? approverId : null });
+  await exercise.update({ approved, approvedBy: approved ? actor.id : null });
+  await audit(actor, approved ? 'exercise_approve' : 'exercise_unapprove', { exerciseId: id, title: exercise.title });
   return getExerciseOrFail(id);
 }
 
@@ -99,10 +111,12 @@ export async function listUsers() {
   return User.findAll({ attributes: ['id', 'email', 'role', 'createdAt'], order: [['id', 'ASC']] });
 }
 
-export async function updateUserRole(actorId: number, userId: number, role: UserRole) {
-  if (actorId === userId) throw ApiError.badRequest('Kendi rolünüzü değiştiremezsiniz');
+export async function updateUserRole(actor: Actor, userId: number, role: UserRole) {
+  if (actor.id === userId) throw ApiError.badRequest('Kendi rolünüzü değiştiremezsiniz');
   const user = await User.findByPk(userId, { attributes: ['id', 'email', 'role', 'createdAt'] });
   if (!user) throw ApiError.notFound('Kullanıcı bulunamadı');
+  const previousRole = user.role;
   await user.update({ role });
+  await audit(actor, 'role_change', { targetUserId: user.id, targetEmail: user.email, previousRole, role });
   return user;
 }

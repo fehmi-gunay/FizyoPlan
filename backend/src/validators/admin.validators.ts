@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AUDIT_ACTIONS } from '../models/AuditLog';
 import { REGION_CODES } from './profile.validators';
 
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
@@ -53,3 +54,29 @@ export const updateRoleSchema = z.object({
 export type CreateExerciseInput = z.infer<typeof createExerciseSchema>;
 export type UpdateExerciseInput = z.infer<typeof updateExerciseSchema>;
 export type AdminExerciseQuery = z.infer<typeof adminExerciseQuerySchema>;
+
+// Tarih filtresi: 'YYYY-MM-DD' gelirse gün başı / gün sonu (yerel saat) kabul edilir
+const dateParam = (edge: 'start' | 'end') =>
+  z
+    .string()
+    .trim()
+    .transform((v, ctx) => {
+      const d = /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(`${v}T${edge === 'start' ? '00:00:00' : '23:59:59.999'}`) : new Date(v);
+      if (Number.isNaN(d.getTime())) {
+        ctx.addIssue({ code: 'custom', message: 'Geçersiz tarih' });
+        return z.NEVER;
+      }
+      return d;
+    });
+
+export const auditQuerySchema = z.object({
+  action: z.enum(AUDIT_ACTIONS).optional(),
+  userId: z.coerce.number().int().positive().optional(),
+  email: z.string().trim().min(1).max(255).optional(),
+  from: dateParam('start').optional(),
+  to: dateParam('end').optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(25),
+});
+
+export type AuditQuery = z.infer<typeof auditQuerySchema>;

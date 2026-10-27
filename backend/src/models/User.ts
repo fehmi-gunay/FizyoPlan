@@ -8,6 +8,8 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare email: string;
   declare passwordHash: string;
   declare role: CreationOptional<UserRole>;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
 User.init(
@@ -16,6 +18,8 @@ User.init(
     email: { type: DataTypes.STRING(255), allowNull: false, unique: true },
     passwordHash: { type: DataTypes.STRING(255), allowNull: false },
     role: { type: DataTypes.ENUM('user', 'admin', 'physio'), allowNull: false, defaultValue: 'user' },
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
   },
   { sequelize, tableName: 'users' },
 );

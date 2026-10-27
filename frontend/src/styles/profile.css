@@ -1,0 +1,32 @@
+/* Profil ve ayarlar */
+@import './survey.css';
+
+.profile {
+  max-width: 820px;
+  margin: 0 auto;
+}
+.mt-3 {
+  margin-top: var(--space-3);
+}
+.option-grid {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+}
+.font-preview {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.form-narrow {
+  max-width: 440px;
+}
+.danger-zone {
+  border-color: var(--danger);
+  border-width: 2px;
+}
+.danger-zone h2 {
+  color: var(--danger);
+}

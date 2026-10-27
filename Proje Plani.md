@@ -77,19 +77,17 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - [x] **Aşama 6 – Feedback + plan askıya alma**, günlük/haftalık plan listeleme
 - [x] **Aşama 7 – Test, güvenlik sertleştirme, API dokümanı** (+ uzman/admin egzersiz yönetimi)
 - [ ] **Aşama 8 – Gerçek AI entegrasyonu** (`AiProvider` arkasına)
-- [ ] **Aşama 9 – React + TS frontend** (bkz. `Tasarim Plani.md`)
+- [x] **Aşama 9 – React + TS frontend** (bkz. `Tasarim Plani.md`) — ilk sürüm; tarayıcıda görsel kontrol ve geri bildirimle iyileştirme sürüyor
 - [ ] **Aşama 10 – Video içerikleri, SUS testi, sonuç raporu**
 
 ## 7. Nerede Kaldık?
-- Durum: **Backend kullanılabilir durumda** — Aşama 1-7 tamam. 147 test geçiyor (`npm test`, ayrı `fizyoterapi_test` DB). Docker MySQL **3308** portunda.
+- Durum: **Çalışan web sitesi** — backend (Aşama 1-7) + frontend ilk sürümü (Aşama 9) + admin paneli (giriş/aktivite kayıtları dahil). Backend 158 test geçiyor.
 - Repo: https://github.com/fehmi-gunay/fizyoterapi-projesi (gizli). Her aşama sonunda commit + push.
-- **Tüm uçlar ve yanıt şekilleri: `backend/API.md`** (frontend bunu referans alacak).
-- Akış: anket → `POST /plans/generate` (risk → aday seçimi → `AiProvider` → şema → `clinicalFilter`) → taslak → `activate` → `GET /plans/active/today` → `POST /plan-items/:id/feedback` → eşik aşılırsa `suspended` → anketi yeniden doldur → `reassess`.
-- Uzman paneli backend'i hazır: `/admin/exercises` (yeni/düzenlenen egzersiz onaysız başlar), `/admin/users`. Admin hesabı: `.env`'e `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` + `npm run db:seed`.
-- Güvenlik: auth uçlarına sıkı rate limit (production), JWT HS256 + rol her istekte DB'den, bozuk JSON 400 / büyük gövde 413, zamanlama saldırısına karşı sahte hash, KVKK hesap silme (`DELETE /auth/me`), parola değiştirme, zod mesajları Türkçe.
-- Şema notu: `plans.activatedAt/suspendedAt` dev DB'ye elle ALTER ile eklendi (sync alter etmiyor). Production için migration gerekecek.
-- Başlatma: `npm run db:up` → `npm run dev` (backend klasöründe).
-- Sıradaki adım: **Aşama 9 – React + TS frontend** (`Tasarim Plani.md` + `backend/API.md`). Aşama 8 (gerçek AI) sağlayıcı kararı bekliyor.
+- Çalıştırma: `backend/` → `npm run db:up` + `npm run dev` (:4000) · `frontend/` → `npm run dev` (:5173, `/api` proxy ile backend'e). Ayrıntı: `README.md`, uçlar: `backend/API.md`.
+- Frontend: `src/api/endpoints.ts` (tüm uçlar + React Query anahtarları), `src/styles/global.css` (tokenlar: açık/koyu/yüksek kontrast), sayfalar `src/pages/` (admin: `src/pages/admin/`). Sayfalar lazy yükleniyor.
+- Admin: `admin@fizyo.local` (parola `backend/.env` → `SEED_ADMIN_PASSWORD`). Panel: istatistikler, egzersiz ekle/düzenle/onayla, kullanıcı rolleri, giriş/aktivite kayıtları (`audit_logs`, hesap silinince e-postalar anonimleşir).
+- Açık iş: sayfaların tarayıcıda görsel kontrolü (mobil, koyu tema, yüksek kontrast) — oturumda tarayıcı aracı yoktu.
+- Sıradaki: görsel geri bildirimle düzeltmeler → Aşama 8 (AI + animasyon videoları, kişiye göre filtreleyip program oluşturan model) → Aşama 10.
 
 ## 8. Açık Konular
 - AI sağlayıcısı (hangi hazır model/API?) – Aşama 8'de kararlaştırılacak.
@@ -97,6 +95,7 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - Egzersiz içeriği ve video üretimi (hedef 100+) – uzman desteği; yetişmezse resim + metin (PDF B planı).
 - Egzersiz onayı kaldırılır/düzenlenirse mevcut aktif planlardaki kalemler etkilenmiyor — uzmanla konuşulmalı (planı askıya alma?).
 - Askıdan sonra yeni plan: anketin yeniden doldurulması şartı var; uzman ayrıca bekleme süresi isteyebilir.
+- Production: `TRUST_PROXY=true` (giriş kayıtlarında gerçek IP için), HTTPS, frontend build'inin sunulması.
 - Production: Sequelize migration'ları (şu an dev'de `sync()`).
 - Veri güvenliği: sağlık verisi (KVKK) – şifreleme, yetkilendirme, bulut depolama (PDF risk tablosu).
 
@@ -109,4 +108,6 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 | 2026-10-27 | Bir kullanıcının tek aktif planı olur; yeni plan onaylanınca eski `completed` |
 | 2026-10-27 | Askıya alınan plan için yeni plan, ancak anket yeniden doldurulduktan sonra |
 | 2026-10-27 | Yeni/düzenlenen egzersiz onaysız başlar; physio/admin onaylar |
+| 2026-10-27 | Admin paneli + giriş/aktivite kayıtları (KVKK: sağlık verisi loglanmaz, silinen hesabın e-postası anonimleşir) |
+| 2026-10-27 | Frontend: Vite + React + TS, TanStack Query, RHF + zod, kendi CSS token sistemi (Bootstrap/Tailwind yerine) |
 | 2026-10-27 | Risk: kırmızı bayrak, yaş >75, VKİ 16-40 dışı, ağrı ≥8 → uzman yönlendirmesi (taslak, uzman onayı bekliyor) |

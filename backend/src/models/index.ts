@@ -1,4 +1,5 @@
 import { sequelize } from '../config/database';
+import { AuditLog } from './AuditLog';
 import { BodyRegion } from './BodyRegion';
 import { Exercise } from './Exercise';
 import { ExerciseContraindication } from './ExerciseContraindication';
@@ -40,12 +41,17 @@ PlanItem.belongsTo(Exercise, { foreignKey: 'exerciseId', as: 'exercise' });
 PlanItem.hasMany(SessionFeedback, { foreignKey: { name: 'planItemId', allowNull: false }, as: 'feedback', onDelete: 'CASCADE' });
 SessionFeedback.belongsTo(PlanItem, { foreignKey: 'planItemId' });
 
+// Aktivite kaydı: kullanıcı silinince kayıt kalır, userId boşalır
+User.hasMany(AuditLog, { foreignKey: { name: 'userId', allowNull: true }, onDelete: 'SET NULL' });
+AuditLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 // Geliştirme için: tabloları modellere göre oluşturur. { alter: true } eksik sütunları günceller.
 export async function syncDatabase(options: { force?: boolean; alter?: boolean } = {}): Promise<void> {
   await sequelize.sync(options);
 }
 
 export {
+  AuditLog,
   BodyRegion,
   Exercise,
   ExerciseContraindication,

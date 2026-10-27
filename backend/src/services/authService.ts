@@ -4,6 +4,7 @@ import { env } from '../config/env';
 import { User, UserRole } from '../models/User';
 import { ChangePasswordInput, DeleteAccountInput, LoginInput, RegisterInput } from '../validators/auth.validators';
 import { ApiError } from '../utils/ApiError';
+import { anonymizeUser, logEvent, RequestContext } from './auditService';
 
 const BCRYPT_ROUNDS = 12;
 // Kullanıcı yokken de bcrypt çalışsın diye: yanıt süresinden e-postanın kayıtlı olup olmadığı anlaşılmaz
@@ -47,20 +48,25 @@ export async function verifyToken(token: string): Promise<TokenPayload> {
   return { id: user.id, role: user.role };
 }
 
-export async function register(input: RegisterInput) {
+export async function register(input: RegisterInput, ctx: RequestContext = {}) {
   const existing = await User.findOne({ where: { email: input.email } });
   if (existing) throw ApiError.conflict('Bu e-posta ile zaten bir hesap var');
 
   const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
   const user = await User.create({ email: input.email, passwordHash });
+  await logEvent({ action: 'register', userId: user.id, email: user.email, ...ctx });
   return { user: toPublicUser(user), token: signToken(user) };
 }
 
-export async function login(input: LoginInput) {
+export async function login(input: LoginInput, ctx: RequestContext = {}) {
   const user = await User.findOne({ where: { email: input.email } });
   // Hangisinin yanlış olduğunu belli etmemek için tek mesaj
   const ok = await bcrypt.compare(input.password, user?.passwordHash ?? DUMMY_HASH);
-  if (!user || !ok) throw ApiError.unauthorized('E-posta veya parola hatalı');
+  if (!user || !ok) {
+    await logEvent({ action: 'login_failed', userId: user?.id ?? null, email: input.email, ...ctx });
+    throw ApiError.unauthorized('E-posta veya parola hatalı');
+  }
+  await logEvent({ action: 'login_success', userId: user.id, email: user.email, ...ctx });
 
   return { user: toPublicUser(user), token: signToken(user) };
 }
@@ -79,13 +85,17 @@ async function verifyPassword(id: number, password: string): Promise<User> {
   return user;
 }
 
-export async function changePassword(id: number, input: ChangePasswordInput) {
+export async function changePassword(id: number, input: ChangePasswordInput, ctx: RequestContext = {}) {
   const user = await verifyPassword(id, input.currentPassword);
   await user.update({ passwordHash: await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS) });
+  await logEvent({ action: 'password_change', userId: user.id, email: user.email, ...ctx });
 }
 
 // KVKK: hesap ve bağlı tüm sağlık verileri (profil, ağrı bölgeleri, planlar, geri bildirimler) silinir.
-export async function deleteAccount(id: number, input: DeleteAccountInput) {
+export async function deleteAccount(id: number, input: DeleteAccountInput, ctx: RequestContext = {}) {
   const user = await verifyPassword(id, input.password);
+  await anonymizeUser(user.id);
   await user.destroy();
+  // Silinen hesabın kaydında kimlik bilgisi tutulmaz (yalnızca işlem + zaman)
+  await logEvent({ action: 'account_delete', ip: ctx.ip, userAgent: ctx.userAgent });
 }

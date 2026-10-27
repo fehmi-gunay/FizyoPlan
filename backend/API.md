@@ -47,6 +47,8 @@ npm test                    # testler (ayrı fizyoterapi_test veritabanı)
 | POST | `/admin/exercises/:id/approve` · `/unapprove` | physio, admin | Onayla / onayı kaldır |
 | GET | `/admin/users` | admin | Kullanıcılar (sağlık verisi yok) |
 | PATCH | `/admin/users/:id/role` | admin | Rol değiştir |
+| GET | `/admin/audit-logs` | admin | Giriş / aktivite kayıtları (sayfalı) |
+| GET | `/admin/stats` | physio, admin | Panel özeti (yalnızca sayılar) |
 
 ---
 
@@ -149,3 +151,26 @@ Ağrı ≥ 7 veya zorluk ≥ 9 ise plan **askıya alınır** (`suspended: true`)
 **GET `/admin/users`** → `{ users: [{ id, email, role, createdAt }] }` · **PATCH `/admin/users/:id/role`** `{ role }` → `{ user }` (admin kendi rolünü değiştiremez).
 
 Admin hesabı: `.env`'e `SEED_ADMIN_EMAIL` ve `SEED_ADMIN_PASSWORD` yazıp `npm run db:seed`.
+
+### Giriş / aktivite kayıtları
+Güvenlik amacıyla şu olaylar `audit_logs` tablosuna yazılır (IP + tarayıcı bilgisiyle, **sağlık verisi yazılmaz**):
+`login_success`, `login_failed` (kayıtlı olmayan e-posta denemeleri dahil), `register`, `password_change`, `account_delete`, `role_change`, `exercise_create`, `exercise_update`, `exercise_approve`, `exercise_unapprove`.
+- `meta`: rol değişikliğinde `{ targetUserId, targetEmail, previousRole, role }`, egzersiz işlemlerinde `{ exerciseId, title }`.
+- KVKK: hesap silinince o kullanıcının eski kayıtlarındaki e-posta silinir ve `userId` boşalır; `account_delete` kaydı kimlik bilgisi içermez.
+- Kayıt yazılamazsa asıl işlem etkilenmez.
+
+**GET `/admin/audit-logs?action=&userId=&email=&from=&to=&page=1&pageSize=25`** (yalnız admin)
+- `email` kısmi eşleşme; `from`/`to` `YYYY-MM-DD` (gün başı/sonu) veya ISO tarih; `pageSize` en fazla 100.
+- → `{ logs: [{ id, action, email, userId, ip, userAgent, meta, createdAt, user: { id, email, role } | null }], page, pageSize, total }` (yeniden eskiye).
+
+**GET `/admin/stats`** (physio, admin)
+```json
+{
+  "users": { "total": 10, "byRole": { "user": 9, "physio": 0, "admin": 1 }, "newLast7Days": 10 },
+  "profiles": { "total": 4 },
+  "plans": { "byStatus": { "draft": 1, "active": 1, "suspended": 0, "completed": 2 } },
+  "feedback": { "last7Days": 3, "suspensionsLast7Days": 2 },
+  "exercises": { "approved": 12, "pending": 0 },
+  "logins": { "successLast7Days": 1, "failedLast7Days": 1, "last24h": 1 }
+}
+```

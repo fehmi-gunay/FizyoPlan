@@ -20,5 +20,9 @@ router.post('/exercises/:id/unapprove', staff, adminController.unapproveExercise
 const adminOnly = requireRole('admin');
 router.get('/users', adminOnly, adminController.listUsers);
 router.patch('/users/:id/role', adminOnly, validate(updateRoleSchema), adminController.updateUserRole);
+router.get('/audit-logs', adminOnly, adminController.listAuditLogs);
+
+// Panel özeti (yalnızca sayılar)
+router.get('/stats', staff, adminController.getStats);
 
 export default router;
