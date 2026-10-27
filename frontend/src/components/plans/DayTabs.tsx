@@ -48,15 +48,17 @@ export function DayTabs({
             aria-controls={panelId}
             tabIndex={selected === day ? 0 : -1}
             className="day-tab"
+            aria-label={`${day}. gün, ${count} egzersiz${today === day ? ', bugün' : ''}`}
             onClick={() => onSelect(day)}
             onKeyDown={(e) => onKey(e, day)}
           >
-            <span className="day-num">{day}</span>
-            <span className="day-count">
+            <span className="day-num" aria-hidden="true">
+              {day}
+            </span>
+            <span className="day-count" aria-hidden="true">
               {today === day ? 'Bugün · ' : ''}
               {count} egz.
             </span>
-            <span className="sr-only">. gün</span>
           </button>
         );
       })}

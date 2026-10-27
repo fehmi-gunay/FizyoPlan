@@ -1,19 +1,20 @@
 {
-  "name": "fizyoterapi-backend",
+  "name": "fizyoplan-backend",
   "version": "1.0.0",
-  "description": "Fizyoterapi Egzersiz Planlama Sistemi - Backend API",
+  "description": "FizyoPlan - Fizyoterapi Egzersiz Planlama Sistemi - Backend API",
   "private": true,
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "typecheck": "tsc --noEmit",
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down",
+    "db:up": "docker compose -f ../docker-compose.yml up -d mysql",
+    "db:down": "docker compose -f ../docker-compose.yml stop mysql",
     "db:seed": "tsx seeders/seed.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:seed:prod": "node dist/seeders/seed.js"
   },
   "license": "ISC",
   "type": "commonjs",

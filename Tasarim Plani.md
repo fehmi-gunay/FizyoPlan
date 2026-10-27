@@ -5,12 +5,15 @@
 ## 1. Sistem Mimarisi
 ```mermaid
 flowchart LR
-  U[Kullanıcı - React + TS] -->|REST/JSON + JWT| A[Express + TS API]
-  A --> DB[(MySQL)]
+  U[Tarayıcı] --> N[nginx - React build<br/>fizyoplan_frontend :8080]
+  N -->|/api - REST/JSON + JWT| A[Express + TS API<br/>fizyoplan_backend]
+  A --> DB[(MySQL 8.4<br/>fizyoplan_mysql)]
   A --> AI{{AiProvider arayüzü}}
   AI --> R[Kural tabanlı yedek - şimdi]
   AI --> X[Hazır AI API - sonra]
 ```
+
+> Docker Compose projesi `fizyoplan`: üç container aynı `fizyoplan_net` ağında. Geliştirmede yalnızca MySQL Docker'da, backend/frontend `npm run dev` ile çalışır.
 
 ## 2. Plan Üretim ve Güvenlik Akışı (PDF Şekil 1)
 ```mermaid

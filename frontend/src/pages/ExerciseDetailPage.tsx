@@ -14,8 +14,14 @@ import {
   formatDate,
   formatDuration,
 } from '../lib/labels';
+import { CONDITION_OPTIONS } from '../lib/survey';
 import type { FeedbackResult } from '../types/api';
 import '../styles/plans.css';
+
+// Kontrendikasyon kodunu ankette gösterilen Türkçe karşılığına çevirir ("akut_bel_fitigi" → "Akut bel fıtığı")
+function conditionLabel(code: string): string {
+  return CONDITION_OPTIONS.find((o) => o.code === code)?.label ?? code.replaceAll('_', ' ');
+}
 
 function painText(v: number) {
   if (v === 0) return 'ağrı yok';
@@ -184,7 +190,7 @@ export default function ExerciseDetailPage() {
           )}
           {e.contraindications.length > 0 && (
             <p className="muted small mb-0" style={{ marginTop: 'var(--space-4)' }}>
-              Şu durumlarda önerilmez: {e.contraindications.map((c) => c.condition.replaceAll('_', ' ')).join(', ')}
+              Şu durumlarda önerilmez: {e.contraindications.map((c) => conditionLabel(c.condition)).join(', ')}
             </p>
           )}
         </Card>

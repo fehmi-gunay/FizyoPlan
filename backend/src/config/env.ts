@@ -15,6 +15,8 @@ const envSchema = z.object({
 
   JWT_SECRET: z.string().min(32, 'JWT_SECRET en az 32 karakter olmalı'),
   JWT_EXPIRES_IN: z.string().default('1d'),
+  // Migration gelene kadar: true ise açılışta tablolar modellerden oluşturulur (Docker'da açık)
+  DB_SYNC: z.stringbool().default(false),
   // Ters vekil (nginx vb.) arkasında çalışırken rate limit gerçek IP'yi görsün
   TRUST_PROXY: z.stringbool().default(false),
 });

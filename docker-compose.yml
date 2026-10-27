@@ -1,0 +1,88 @@
+# FizyoPlan – tüm sistem: MySQL + Backend (Express) + Frontend (React, nginx)
+#   Tam uygulama:          docker compose up -d --build      → http://localhost:8080
+#   Sadece veritabanı:     docker compose up -d mysql         (backend/frontend'i npm run dev ile çalıştırırken)
+# Ayarlar kökteki .env dosyasından okunur (şablon: .env.example).
+name: fizyoplan
+
+# Container logları diski doldurmasın (servis başına 5 x 10 MB)
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '5'
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: fizyoplan_mysql
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-fizyoplan}
+      MYSQL_USER: ${DB_USER:-fizyoplan}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Europe/Istanbul
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - '127.0.0.1:${DB_PORT:-3308}:3306' # 3306 yerel MySQL ile çakışmasın
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql:/docker-entrypoint-initdb.d:ro # ilk açılışta test veritabanını da oluşturur
+    healthcheck:
+      # TCP (127.0.0.1) ile: ilk açılıştaki geçici kurulum sunucusu ağı kapalı çalışır, yanlışlıkla "hazır" görünmez
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -u root -p"$$MYSQL_ROOT_PASSWORD" --silent']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - fizyoplan_net
+
+  backend:
+    build: ./backend
+    container_name: fizyoplan_backend
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-fizyoplan}
+      DB_USER: ${DB_USER:-fizyoplan}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_SYNC: 'true' # migration gelene kadar tablolar modellerden oluşturulur
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
+      CLIENT_URL: http://localhost:${FRONTEND_PORT:-8080}
+      TRUST_PROXY: 'true' # nginx arkasında: giriş kayıtlarında gerçek IP
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+    ports:
+      - '127.0.0.1:${BACKEND_PORT:-4001}:4000' # doğrudan API testi için (npm run dev'in 4000'i ile çakışmaz)
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fizyoplan_net
+
+  frontend:
+    build: ./frontend
+    container_name: fizyoplan_frontend
+    restart: unless-stopped
+    logging: *default-logging
+    ports:
+      - '127.0.0.1:${FRONTEND_PORT:-8080}:80'
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - fizyoplan_net
+
+volumes:
+  mysql_data:
+
+networks:
+  fizyoplan_net:
+    name: fizyoplan_net
+    driver: bridge

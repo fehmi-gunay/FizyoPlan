@@ -1,4 +1,4 @@
-# Proje Planı – Fizyoterapi Egzersiz Planlama Sistemi
+# Proje Planı – FizyoPlan (Fizyoterapi Egzersiz Planlama Sistemi)
 
 > Bu dosya projenin yol haritasıdır. Her oturumun başında "Nerede Kaldık?" bölümüne bak, işin sonunda checklist'i ve bu bölümü güncelle.
 > Kaynak: `2209A_Proje_Formu10 (1).pdf` (TÜBİTAK 2209-A). Tasarım detayları: `Tasarim Plani.md`.
@@ -21,7 +21,9 @@ Kullanıcıların yaş, boy, kilo, günlük aktivite düzeyi ve ağrı bölgesi 
 |---|---|
 | Frontend | React + TypeScript (Vite) |
 | Backend | Node.js + Express + **TypeScript** |
-| Veritabanı | MySQL (Docker ile), ORM: **Sequelize** |
+| Veritabanı | MySQL 8.4 (Docker ile), ORM: **Sequelize** |
+| Çalıştırma | Docker Compose (`fizyoplan`): mysql + backend + frontend (nginx) |
+| Ekip akışı | GitHub, korumalı `main`, dal + Pull Request, CI (GitHub Actions) |
 | Auth | JWT + bcrypt |
 | Doğrulama | zod |
 | Yapay zekâ | Hazır model/API, **sonradan** seçilecek. `AiProvider` arayüzü arkasında; şimdilik kural tabanlı yedek |
@@ -81,13 +83,13 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - [ ] **Aşama 10 – Video içerikleri, SUS testi, sonuç raporu**
 
 ## 7. Nerede Kaldık?
-- Durum: **Çalışan web sitesi** — backend (Aşama 1-7) + frontend ilk sürümü (Aşama 9) + admin paneli (giriş/aktivite kayıtları dahil). Backend 158 test geçiyor.
-- Repo: https://github.com/fehmi-gunay/fizyoterapi-projesi (gizli). Her aşama sonunda commit + push.
-- Çalıştırma: `backend/` → `npm run db:up` + `npm run dev` (:4000) · `frontend/` → `npm run dev` (:5173, `/api` proxy ile backend'e). Ayrıntı: `README.md`, uçlar: `backend/API.md`.
-- Frontend: `src/api/endpoints.ts` (tüm uçlar + React Query anahtarları), `src/styles/global.css` (tokenlar: açık/koyu/yüksek kontrast), sayfalar `src/pages/` (admin: `src/pages/admin/`). Sayfalar lazy yükleniyor.
-- Admin: `admin@fizyo.local` (parola `backend/.env` → `SEED_ADMIN_PASSWORD`). Panel: istatistikler, egzersiz ekle/düzenle/onayla, kullanıcı rolleri, giriş/aktivite kayıtları (`audit_logs`, hesap silinince e-postalar anonimleşir).
-- Açık iş: sayfaların tarayıcıda görsel kontrolü (mobil, koyu tema, yüksek kontrast) — oturumda tarayıcı aracı yoktu.
-- Sıradaki: görsel geri bildirimle düzeltmeler → Aşama 8 (AI + animasyon videoları, kişiye göre filtreleyip program oluşturan model) → Aşama 10.
+- Durum: **Çalışan web sitesi Docker'da** — backend (Aşama 1-7) + frontend (Aşama 9) + admin paneli (giriş/aktivite kayıtları). 158 backend testi geçiyor.
+- Repo: https://github.com/fehmi-gunay/FizyoPlan (**herkese açık**). `main` korumalı: ekip dal açıp PR gönderir, yalnızca proje sahibi onaylayıp birleştirir. Her PR'da CI (backend testleri + frontend derleme). Akış: `CONTRIBUTING.md`.
+- Docker (kök `docker-compose.yml`, proje `fizyoplan`): `fizyoplan_mysql` (:3308), `fizyoplan_backend` (:4001, açılışta seed + DB_SYNC), `fizyoplan_frontend` (nginx, **http://localhost:8080**). Ayarlar kök `.env` (şablon `.env.example`).
+- Geliştirme: `docker compose up -d mysql` → `backend: npm run dev` (:4000) + `frontend: npm run dev` (:5173). `backend/.env` DB_* değerleri kök `.env` ile aynı.
+- Admin: `admin@fizyo.local` (parola kök `.env` → `SEED_ADMIN_PASSWORD`).
+- Açık iş: tarayıcıda görsel kontrol (mobil, koyu tema, yüksek kontrast) — Claude in Chrome bağlanınca yapılacak.
+- Sıradaki: görsel düzeltmeler → Aşama 8 (AI + animasyon videoları, kişiye göre filtreleyip program oluşturan model) → Aşama 10.
 
 ## 8. Açık Konular
 - AI sağlayıcısı (hangi hazır model/API?) – Aşama 8'de kararlaştırılacak.
@@ -95,8 +97,7 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - Egzersiz içeriği ve video üretimi (hedef 100+) – uzman desteği; yetişmezse resim + metin (PDF B planı).
 - Egzersiz onayı kaldırılır/düzenlenirse mevcut aktif planlardaki kalemler etkilenmiyor — uzmanla konuşulmalı (planı askıya alma?).
 - Askıdan sonra yeni plan: anketin yeniden doldurulması şartı var; uzman ayrıca bekleme süresi isteyebilir.
-- Production: `TRUST_PROXY=true` (giriş kayıtlarında gerçek IP için), HTTPS, frontend build'inin sunulması.
-- Production: Sequelize migration'ları (şu an dev'de `sync()`).
+- Production: HTTPS (sunucuda ters vekil/sertifika), Docker'daki `DB_SYNC` yerine migration.
 - Veri güvenliği: sağlık verisi (KVKK) – şifreleme, yetkilendirme, bulut depolama (PDF risk tablosu).
 
 ## 9. Karar Günlüğü
@@ -110,4 +111,6 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 | 2026-10-27 | Yeni/düzenlenen egzersiz onaysız başlar; physio/admin onaylar |
 | 2026-10-27 | Admin paneli + giriş/aktivite kayıtları (KVKK: sağlık verisi loglanmaz, silinen hesabın e-postası anonimleşir) |
 | 2026-10-27 | Frontend: Vite + React + TS, TanStack Query, RHF + zod, kendi CSS token sistemi (Bootstrap/Tailwind yerine) |
+| 2026-10-27 | Proje adı **FizyoPlan**; Docker Compose ile mysql + backend + frontend (YapYaptır yapısı örnek alındı) |
+| 2026-10-27 | Repo herkese açık; `main` korumalı (PR + proje sahibinin onayı), CI zorunlu |
 | 2026-10-27 | Risk: kırmızı bayrak, yaş >75, VKİ 16-40 dışı, ağrı ≥8 → uzman yönlendirmesi (taslak, uzman onayı bekliyor) |

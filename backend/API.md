@@ -3,15 +3,16 @@
 Temel adres: `http://localhost:4000/api` · Gövde: JSON · Kimlik: `Authorization: Bearer <token>`
 
 ## Başlatma
+Ayrıntılı kurulum: kökteki [`README.md`](../README.md). Kısaca:
 ```bash
-cd backend
-npm install
-cp .env.example .env        # değerleri düzenle
-npm run db:up               # MySQL (Docker, port 3308)
-npm run db:seed             # bölgeler + örnek egzersizler (+ SEED_ADMIN_* varsa admin hesabı)
-npm run dev                 # http://localhost:4000/api
-npm test                    # testler (ayrı fizyoterapi_test veritabanı)
+docker compose up -d mysql   # (kök klasörde) yalnızca veritabanı, localhost:3308
+cd backend && npm install
+cp .env.example .env         # DB_* değerleri kökteki .env ile aynı
+npm run db:seed              # bölgeler + örnek egzersizler (+ SEED_ADMIN_* varsa admin)
+npm run dev                  # http://localhost:4000/api
+npm test                     # testler (ayrı fizyoplan_test veritabanı)
 ```
+Docker ile tüm sistemde API, nginx üzerinden `http://localhost:8080/api` (doğrudan: `http://localhost:4001/api`).
 
 ## Genel kurallar
 - **Hata formatı** (her hata aynı): `{ "error": { "code": "BAD_REQUEST", "message": "…", "details": [...] } }`

@@ -10,6 +10,7 @@ import { AdminNav } from '../../components/admin/AdminNav';
 import { Field } from '../../components/form';
 import { Alert, Button, Card, ErrorState, LoadingState, PageHeader } from '../../components/ui';
 import { DIFFICULTY_LABELS, REGION_LABELS } from '../../lib/labels';
+import { CONDITION_OPTIONS } from '../../lib/survey';
 import type { Exercise } from '../../types/api';
 
 const REGION_CODES = ['neck', 'shoulder', 'lower_back', 'knee'] as const;
@@ -104,7 +105,16 @@ function ChipInput({ value, onChange, id }: { value: string[]; onChange(v: strin
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onKey}
           placeholder="örn. akut_bel_fitigi"
+          list={`${id}-known`}
         />
+        {/* Ankette sorulan tanılarla eşleşen kodlar; listede olmayan kod hiçbir kullanıcıyla eşleşmez */}
+        <datalist id={`${id}-known`}>
+          {CONDITION_OPTIONS.map((o) => (
+            <option key={o.code} value={o.code}>
+              {o.label}
+            </option>
+          ))}
+        </datalist>
         <Button variant="secondary" onClick={add} disabled={!draft.trim()}>
           Ekle
         </Button>

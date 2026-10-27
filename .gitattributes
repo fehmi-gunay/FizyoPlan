@@ -1,0 +1,8 @@
+* text=auto
+# Container içinde çalışan betikler LF satır sonu ister
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.conf text eol=lf
+*.pdf binary
+*.png binary
+*.svg text

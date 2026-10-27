@@ -27,8 +27,8 @@ export default function AdminExercisesPage() {
     mutationFn: ({ id, approved }: { id: number; approved: boolean; title: string }) => setExerciseApproval(id, approved),
     onSuccess: (_d, v) => {
       setNotice({ tone: 'success', text: `"${v.title}" ${v.approved ? 'onaylandı' : 'onayı kaldırıldı'}.` });
-      queryClient.invalidateQueries({ queryKey: adminKeys.exercisesAll });
-      queryClient.invalidateQueries({ queryKey: adminKeys.stats });
+      // Liste, düzenleme formu önbelleği, istatistikler ve (yeni kayıt düşen) aktivite kayıtları birlikte yenilenir
+      queryClient.invalidateQueries({ queryKey: adminKeys.all });
     },
     onError: (err) => setNotice({ tone: 'danger', text: errorMessage(err) }),
   });

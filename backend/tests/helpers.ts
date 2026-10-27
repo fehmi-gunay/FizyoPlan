@@ -8,8 +8,8 @@ import type { UserRole } from '../src/models/User';
 
 export const api = () => request(app);
 
-if (sequelize.getDatabaseName() !== 'fizyoterapi_test') {
-  throw new Error(`Testler yalnızca fizyoterapi_test veritabanında çalışır (şu an: ${sequelize.getDatabaseName()})`);
+if (sequelize.getDatabaseName() !== 'fizyoplan_test') {
+  throw new Error(`Testler yalnızca fizyoplan_test veritabanında çalışır (şu an: ${sequelize.getDatabaseName()})`);
 }
 
 type FixtureExercise = {

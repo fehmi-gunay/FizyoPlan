@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { api, tokenStore, UNAUTHORIZED_EVENT } from '../api/client';
+import { api, ApiError, tokenStore, UNAUTHORIZED_EVENT } from '../api/client';
 import type { AuthResponse, User } from '../types/api';
 
 type Status = 'loading' | 'authenticated' | 'anonymous';
@@ -35,7 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(user);
         setStatus('authenticated');
       })
-      .catch(() => logout());
+      .catch((err) => {
+        // Yalnızca 401'de oturum kapanır (client UNAUTHORIZED_EVENT ile tetikler). Sunucu geçici olarak
+        // ulaşılamazsa token silinmez; kullanıcı giriş ekranını görür, sayfa yenilenince oturum geri gelir.
+        if (err instanceof ApiError && err.status === 401) logout();
+        else setStatus('anonymous');
+      });
   }, [logout]);
 
   useEffect(() => {

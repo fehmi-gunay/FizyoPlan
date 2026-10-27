@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { sequelize } from '../src/config/database';
+import { connectDatabase, sequelize } from '../src/config/database';
 import { BodyRegion, Exercise, ExerciseContraindication, ExerciseRegion, syncDatabase, User } from '../src/models';
 import type { RegionCode } from '../src/models/BodyRegion';
 import type { Difficulty } from '../src/models/Exercise';
@@ -46,6 +46,7 @@ const exercises: Record<RegionCode, SeedExercise[]> = {
 };
 
 async function seed() {
+  await connectDatabase();
   // Tablolar yoksa oluşturur, varsa dokunmaz
   await syncDatabase();
 

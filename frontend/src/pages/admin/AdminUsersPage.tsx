@@ -23,8 +23,8 @@ export default function AdminUsersPage() {
     mutationFn: ({ user, role }: { user: AdminUser; role: Role }) => updateUserRole(user.id, role),
     onSuccess: (updated) => {
       setNotice({ tone: 'success', text: `${updated.email} artık "${ROLE_LABELS[updated.role]}".` });
-      queryClient.invalidateQueries({ queryKey: adminKeys.users });
-      queryClient.invalidateQueries({ queryKey: adminKeys.stats });
+      // Kullanıcılar, istatistikler ve aktivite kayıtları (rol değişikliği kaydı) birlikte yenilenir
+      queryClient.invalidateQueries({ queryKey: adminKeys.all });
     },
     onError: (err) => setNotice({ tone: 'danger', text: errorMessage(err) }),
   });
