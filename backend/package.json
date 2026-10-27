@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "db:seed": "tsx seeders/seed.ts"
+    "db:seed": "tsx seeders/seed.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "license": "ISC",
   "type": "commonjs",
@@ -32,7 +34,10 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.5",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   }
 }

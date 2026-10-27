@@ -34,6 +34,8 @@ flowchart TD
 Klinik uygunluk (Denklem 1): egzersiz onaylı kütüphanede **ve** kontrendikasyon ∩ kullanıcı sağlık durumu = ∅ **ve** set/tekrar/süre sınırlar içinde. Askıya alma (Denklem 2): `ağrı ≥ θa` veya `zorluk ≥ θz`.
 
 ## 3. API Uç Taslağı (`/api`)
+> Güncel ve ayrıntılı sürüm: **`backend/API.md`** (yanıt şekilleri, hata kodları, ekran eşleşmeleri).
+
 | Method | Uç | Açıklama | Auth |
 |---|---|---|---|
 | GET | `/health` | Sunucu sağlık kontrolü | – |

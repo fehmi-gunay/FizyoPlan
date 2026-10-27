@@ -10,6 +10,8 @@ export class Plan extends Model<InferAttributes<Plan>, InferCreationAttributes<P
   declare userId: ForeignKey<User['id']>;
   declare type: PlanType;
   declare status: CreationOptional<PlanStatus>;
+  declare activatedAt: CreationOptional<Date | null>;
+  declare suspendedAt: CreationOptional<Date | null>;
 }
 
 Plan.init(
@@ -17,6 +19,8 @@ Plan.init(
     id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
     type: { type: DataTypes.ENUM('daily', 'weekly'), allowNull: false },
     status: { type: DataTypes.ENUM('draft', 'active', 'suspended', 'completed'), allowNull: false, defaultValue: 'draft' },
+    activatedAt: { type: DataTypes.DATE, allowNull: true },
+    suspendedAt: { type: DataTypes.DATE, allowNull: true },
   },
   { sequelize, tableName: 'plans' },
 );

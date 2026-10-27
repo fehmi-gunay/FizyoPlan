@@ -74,26 +74,30 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 - [x] **Aşama 3 – Auth:** kayıt/giriş, bcryptjs + JWT, auth ve rol middleware
 - [x] **Aşama 4 – Profil/anket + egzersiz kütüphanesi uçları** (sadece `approved`)
 - [x] **Aşama 5 – Risk + clinicalFilter + kural tabanlı plan üretimi** (AI'sız tam akış)
-- [ ] **Aşama 6 – Feedback + plan askıya alma**, günlük/haftalık plan listeleme
-- [ ] **Aşama 7 – Test, güvenlik sertleştirme, API dokümanı**
+- [x] **Aşama 6 – Feedback + plan askıya alma**, günlük/haftalık plan listeleme
+- [x] **Aşama 7 – Test, güvenlik sertleştirme, API dokümanı** (+ uzman/admin egzersiz yönetimi)
 - [ ] **Aşama 8 – Gerçek AI entegrasyonu** (`AiProvider` arkasına)
 - [ ] **Aşama 9 – React + TS frontend** (bkz. `Tasarim Plani.md`)
 - [ ] **Aşama 10 – Video içerikleri, SUS testi, sonuç raporu**
 
 ## 7. Nerede Kaldık?
-- Durum: Aşama 1-5 tamam, gerçek isteklerle doğrulandı. Docker MySQL **3308** portunda (3306 yerel mysqld, 3307 başka proje kullanıyor).
+- Durum: **Backend kullanılabilir durumda** — Aşama 1-7 tamam. 147 test geçiyor (`npm test`, ayrı `fizyoterapi_test` DB). Docker MySQL **3308** portunda.
 - Repo: https://github.com/fehmi-gunay/fizyoterapi-projesi (gizli). Her aşama sonunda commit + push.
-- Çalışan uçlar: `/health`, `/auth/register|login|me`, `/profile` (GET/PUT), `/regions`, `/exercises`, `/plans/generate`, `/plans/:id`, `/plans/:id/activate`.
-- Aşama 5 yapısı: `config/clinical.ts` (eşikler + kırmızı bayrak kodları, **taslak**), `riskService` → `planService.selectCandidates` (bölge + onay + kontrendikasyon + şiddete göre zorluk) → `aiService` (`AiProvider`, zaman aşımı, zod şema kontrolü) → `clinicalFilter` (Denklem 1) → taslak plan. Onayda risk yeniden kontrol edilir; önceki aktif plan `completed` olur.
-- `/plans/generate` yanıtı: riskli/değerlendirilemedi → 200 `{outcome:"referral", riskLevel, reasons}`; başarılı → 201 `{outcome:"created", plan, rejected}`; uygun öneri yok → 422 `NO_SUITABLE_*`; öneri hatası/şema/zaman aşımı → 502/504.
+- **Tüm uçlar ve yanıt şekilleri: `backend/API.md`** (frontend bunu referans alacak).
+- Akış: anket → `POST /plans/generate` (risk → aday seçimi → `AiProvider` → şema → `clinicalFilter`) → taslak → `activate` → `GET /plans/active/today` → `POST /plan-items/:id/feedback` → eşik aşılırsa `suspended` → anketi yeniden doldur → `reassess`.
+- Uzman paneli backend'i hazır: `/admin/exercises` (yeni/düzenlenen egzersiz onaysız başlar), `/admin/users`. Admin hesabı: `.env`'e `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` + `npm run db:seed`.
+- Güvenlik: auth uçlarına sıkı rate limit (production), JWT HS256 + rol her istekte DB'den, bozuk JSON 400 / büyük gövde 413, zamanlama saldırısına karşı sahte hash, KVKK hesap silme (`DELETE /auth/me`), parola değiştirme, zod mesajları Türkçe.
+- Şema notu: `plans.activatedAt/suspendedAt` dev DB'ye elle ALTER ile eklendi (sync alter etmiyor). Production için migration gerekecek.
 - Başlatma: `npm run db:up` → `npm run dev` (backend klasöründe).
-- Bilinen küçük konu: `weightKg` yanıtta string ("72.0", DECIMAL) dönüyor.
-- Sıradaki adım: Aşama 6 (feedback + askıya alma (Denklem 2), `GET /plans` günlük/haftalık listeleme).
+- Sıradaki adım: **Aşama 9 – React + TS frontend** (`Tasarim Plani.md` + `backend/API.md`). Aşama 8 (gerçek AI) sağlayıcı kararı bekliyor.
 
 ## 8. Açık Konular
 - AI sağlayıcısı (hangi hazır model/API?) – Aşama 8'de kararlaştırılacak.
 - Risk kuralları (kırmızı bayraklar listesi), eşik değerleri, set/tekrar sınırları – fizyoterapist/danışman onayı gerekli.
 - Egzersiz içeriği ve video üretimi (hedef 100+) – uzman desteği; yetişmezse resim + metin (PDF B planı).
+- Egzersiz onayı kaldırılır/düzenlenirse mevcut aktif planlardaki kalemler etkilenmiyor — uzmanla konuşulmalı (planı askıya alma?).
+- Askıdan sonra yeni plan: anketin yeniden doldurulması şartı var; uzman ayrıca bekleme süresi isteyebilir.
+- Production: Sequelize migration'ları (şu an dev'de `sync()`).
 - Veri güvenliği: sağlık verisi (KVKK) – şifreleme, yetkilendirme, bulut depolama (PDF risk tablosu).
 
 ## 9. Karar Günlüğü
@@ -102,4 +106,7 @@ Eşikler (θa, θz) ve sınır değerler uzman fizyoterapistle belirlenecek → 
 | 2026-10-27 | Backend Node + Express + TypeScript, MySQL (Docker), Sequelize; frontend React + TS |
 | 2026-10-27 | AI entegrasyonu sonraya bırakıldı; `AiProvider` arayüzü + kural tabanlı yedek |
 | 2026-10-27 | Kod GitHub'da gizli repoda; her aşama sonunda commit + push (geri dönüş noktası) |
+| 2026-10-27 | Bir kullanıcının tek aktif planı olur; yeni plan onaylanınca eski `completed` |
+| 2026-10-27 | Askıya alınan plan için yeni plan, ancak anket yeniden doldurulduktan sonra |
+| 2026-10-27 | Yeni/düzenlenen egzersiz onaysız başlar; physio/admin onaylar |
 | 2026-10-27 | Risk: kırmızı bayrak, yaş >75, VKİ 16-40 dışı, ağrı ≥8 → uzman yönlendirmesi (taslak, uzman onayı bekliyor) |

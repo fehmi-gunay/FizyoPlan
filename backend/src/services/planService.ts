@@ -1,12 +1,13 @@
+import { col, fn, Op, WhereOptions } from 'sequelize';
 import { sequelize } from '../config/database';
 import { clinicalConfig, DIFFICULTY_ORDER } from '../config/clinical';
-import { BodyRegion, Exercise, ExerciseContraindication, Plan, PlanItem } from '../models';
+import { BodyRegion, Exercise, ExerciseContraindication, Plan, PlanItem, SessionFeedback } from '../models';
 import type { RegionCode } from '../models/BodyRegion';
 import type { Difficulty } from '../models/Exercise';
 import type { ActivityLevel } from '../models/HealthProfile';
 import { ApiError } from '../utils/ApiError';
 import { ageFrom, ageRange } from '../utils/age';
-import { GeneratePlanInput } from '../validators/plan.validators';
+import { GeneratePlanInput, ListPlansQuery } from '../validators/plan.validators';
 import { requestSuggestion } from './aiService';
 import { clinicalFilter, LibraryEntry } from './clinicalFilter';
 import * as profileService from './profileService';
@@ -131,12 +132,16 @@ export async function getPlan(userId: number, planId: number) {
         model: PlanItem,
         as: 'items',
         attributes: { exclude: ['planId'] },
-        include: [{ model: Exercise, as: 'exercise', attributes: ['id', 'title', 'description', 'videoUrl', 'difficulty'] }],
+        include: [
+          { model: Exercise, as: 'exercise', attributes: ['id', 'title', 'description', 'videoUrl', 'difficulty'] },
+          { model: SessionFeedback, as: 'feedback', attributes: ['id', 'pain', 'difficulty', 'createdAt'] },
+        ],
       },
     ],
     order: [
       [{ model: PlanItem, as: 'items' }, 'day', 'ASC'],
       [{ model: PlanItem, as: 'items' }, 'id', 'ASC'],
+      [{ model: PlanItem, as: 'items' }, { model: SessionFeedback, as: 'feedback' }, 'createdAt', 'ASC'],
     ],
   });
   if (!plan) throw ApiError.notFound('Plan bulunamadı');
@@ -158,7 +163,98 @@ export async function activatePlan(userId: number, planId: number) {
 
   await sequelize.transaction(async (transaction) => {
     await Plan.update({ status: 'completed' }, { where: { userId, status: 'active' }, transaction });
-    await plan.update({ status: 'active' }, { transaction });
+    await plan.update({ status: 'active', activatedAt: new Date() }, { transaction });
   });
   return getPlan(userId, planId);
+}
+
+// Planlarım: özet liste (kalemler olmadan, kalem sayısıyla), yeniden eskiye
+export async function listPlans(userId: number, filters: ListPlansQuery) {
+  const where: WhereOptions = { userId };
+  if (filters.status) Object.assign(where, { status: filters.status });
+  if (filters.type) Object.assign(where, { type: filters.type });
+
+  const plans = await Plan.findAll({ where, order: [['createdAt', 'DESC'], ['id', 'DESC']] });
+  if (plans.length === 0) return [];
+
+  const counts = (await PlanItem.findAll({
+    attributes: ['planId', [fn('COUNT', col('id')), 'count']],
+    where: { planId: plans.map((p) => p.id) },
+    group: ['planId'],
+    raw: true,
+  })) as unknown as { planId: number; count: number | string }[];
+  const countByPlan = new Map(counts.map((c) => [c.planId, Number(c.count)]));
+
+  return plans.map((p) => ({ ...p.toJSON(), itemCount: countByPlan.get(p.id) ?? 0 }));
+}
+
+export async function getActivePlan(userId: number) {
+  const plan = await Plan.findOne({ where: { userId, status: 'active' }, attributes: ['id'] });
+  return plan ? getPlan(userId, plan.id) : null;
+}
+
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+// Haftalık planda gün indeksi aktif edildiği günden itibaren döner: ((gün farkı % 7) + 1)
+function currentDay(plan: Plan): number {
+  if (plan.type === 'daily') return 1;
+  const start = startOfDay(plan.activatedAt ?? (plan.get('createdAt') as Date));
+  const diff = Math.round((startOfDay(new Date()).getTime() - start.getTime()) / 86_400_000);
+  return (((diff % 7) + 7) % 7) + 1;
+}
+
+// Bugünün egzersizleri + bugün geri bildirim verilmiş mi (completed)
+export async function getToday(userId: number, dayOverride?: number) {
+  const plan = await Plan.findOne({ where: { userId, status: 'active' } });
+  if (!plan) return { plan: null, day: null, items: [] };
+
+  const day = plan.type === 'daily' ? 1 : (dayOverride ?? currentDay(plan));
+  const items = await PlanItem.findAll({
+    where: { planId: plan.id, day },
+    attributes: { exclude: ['planId'] },
+    include: [
+      { model: Exercise, as: 'exercise', attributes: ['id', 'title', 'description', 'videoUrl', 'difficulty'] },
+      {
+        model: SessionFeedback,
+        as: 'feedback',
+        attributes: ['id', 'pain', 'difficulty', 'createdAt'],
+        required: false,
+        where: { createdAt: { [Op.gte]: startOfDay(new Date()) } },
+      },
+    ],
+    order: [['id', 'ASC']],
+  });
+
+  return {
+    plan: { id: plan.id, type: plan.type, status: plan.status, activatedAt: plan.activatedAt },
+    day,
+    items: items.map((i) => {
+      const { feedback, ...rest } = i.toJSON() as any;
+      return { ...rest, completed: feedback.length > 0, todayFeedback: feedback };
+    }),
+  };
+}
+
+// Askıdaki plan için yeniden değerlendirme: risk uygunsa plan kapanır, yeni plan üretilebilir
+export async function reassessPlan(userId: number, planId: number) {
+  const plan = await Plan.findOne({ where: { id: planId, userId } });
+  if (!plan) throw ApiError.notFound('Plan bulunamadı');
+  if (plan.status !== 'suspended') throw ApiError.conflict('Yalnızca askıya alınmış plan yeniden değerlendirilebilir');
+
+  const { profile, risk } = await loadRiskContext(userId);
+  // Askıya alınma ağrı/zorluk bildirimiyle oldu; kullanıcı güncel durumunu anketle yeniden bildirmeli
+  const surveyUpdated = profile && plan.suspendedAt && new Date(profile.updatedAt) > plan.suspendedAt;
+  if (!surveyUpdated) {
+    return {
+      canGenerate: false,
+      riskLevel: 'unassessable' as const,
+      reasons: ['Plan askıya alındıktan sonra sağlık anketini güncel ağrı durumunuzla yeniden doldurun'],
+    };
+  }
+  if (risk.level !== 'ok') {
+    return { canGenerate: false, riskLevel: risk.level, reasons: risk.reasons };
+  }
+
+  await plan.update({ status: 'completed' });
+  return { canGenerate: true, message: 'Değerlendirme uygun. Güncel bilgilerinizle yeni bir plan oluşturabilirsiniz.' };
 }

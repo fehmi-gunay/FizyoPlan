@@ -1,5 +1,6 @@
+import bcrypt from 'bcryptjs';
 import { sequelize } from '../src/config/database';
-import { BodyRegion, Exercise, ExerciseContraindication, ExerciseRegion, syncDatabase } from '../src/models';
+import { BodyRegion, Exercise, ExerciseContraindication, ExerciseRegion, syncDatabase, User } from '../src/models';
 import type { RegionCode } from '../src/models/BodyRegion';
 import type { Difficulty } from '../src/models/Exercise';
 
@@ -76,7 +77,23 @@ async function seed() {
       }
     }
   }
+
+  await seedAdmin();
   console.log('Seed tamamlandı');
+}
+
+// Opsiyonel: .env'de SEED_ADMIN_EMAIL ve SEED_ADMIN_PASSWORD varsa admin hesabı oluşturur (varsa dokunmaz)
+async function seedAdmin() {
+  const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  if (!email || !password) return;
+  if (password.length < 12) throw new Error('SEED_ADMIN_PASSWORD en az 12 karakter olmalı');
+
+  const [, created] = await User.findOrCreate({
+    where: { email },
+    defaults: { email, passwordHash: await bcrypt.hash(password, 12), role: 'admin' },
+  });
+  console.log(created ? `Admin hesabı oluşturuldu: ${email}` : `Admin hesabı zaten var: ${email}`);
 }
 
 seed()

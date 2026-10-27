@@ -15,3 +15,13 @@ export async function me(req: Request, res: Response) {
   const user = await authService.getCurrentUser(req.user!.id);
   res.json({ user });
 }
+
+export async function changePassword(req: Request, res: Response) {
+  await authService.changePassword(req.user!.id, req.body);
+  res.status(204).end();
+}
+
+export async function deleteAccount(req: Request, res: Response) {
+  await authService.deleteAccount(req.user!.id, req.body);
+  res.status(204).end();
+}

@@ -13,6 +13,8 @@ export class HealthProfile extends Model<InferAttributes<HealthProfile>, InferCr
   declare activityLevel: ActivityLevel;
   declare redFlags: CreationOptional<string[]>;
   declare conditions: CreationOptional<string[]>;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
 HealthProfile.init(
@@ -24,6 +26,8 @@ HealthProfile.init(
     activityLevel: { type: DataTypes.ENUM('sedentary', 'light', 'moderate', 'active'), allowNull: false },
     redFlags: { type: DataTypes.JSON, allowNull: false, defaultValue: [] },
     conditions: { type: DataTypes.JSON, allowNull: false, defaultValue: [] },
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
   },
   { sequelize, tableName: 'health_profiles' },
 );

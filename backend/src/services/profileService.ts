@@ -13,6 +13,7 @@ export async function getProfile(userId: number) {
 
   return {
     ...profile.toJSON(),
+    weightKg: Number(profile.weightKg), // DECIMAL sütunu string döner
     painRegions: pains.map((p) => ({ regionCode: codeById.get(p.regionId), severity: p.severity })),
   };
 }
@@ -29,7 +30,12 @@ export async function saveProfile(userId: number, input: ProfileInput) {
 
   await sequelize.transaction(async (transaction) => {
     const existing = await HealthProfile.findOne({ where: { userId }, transaction });
-    if (existing) await existing.update(data, { transaction });
+    if (existing) {
+      existing.set(data);
+      // Değer aynı kalsa da anketin yeniden doldurulduğu zaman kaydedilsin (yeniden değerlendirme bunu kullanır)
+      existing.changed('updatedAt', true);
+      await existing.save({ transaction });
+    }
     else await HealthProfile.create({ ...data, userId }, { transaction });
 
     await UserPainRegion.destroy({ where: { userId }, transaction });
