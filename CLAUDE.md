@@ -30,9 +30,12 @@ Mevcut düzene uy: isimler (değişken, fonksiyon, model) İngilizce; **kod yoru
 1. Güncel `main`'den `fehmi/<kisa-ingilizce-konu>` dalı aç; doğrulanmış parçayı commit edip dala push et (sormadan).
 2. Paket bitince `gh pr create --base main` ile PR aç; `.github/pull_request_template.md`'yi Türkçe doldur.
    Klinik eşik/kural değişikliği (`backend/src/config/clinical.ts`) PR açıklamasında ayrıca belirtilir.
-3. `gh pr checks` yeşil olmadan birleştirme yok. Fehmi "tamam" deyince `gh pr merge --rebase` (merge commit yok).
+3. `gh pr checks` yeşil olmadan birleştirme yok. Fehmi "tamam" deyince `gh pr merge --squash --admin`
+   (repoda yalnız squash açık; PR başlığı tek satır `type: subject` olur). `--admin` gerekir çünkü PR'ı yazan onaylayamaz.
+   Birleşince GitHub dalı kendisi siler (repo ayarı); yerelde `git switch main && git pull --ff-only`.
+- `main` korumalı (13 Kas 2026): PR şart, iki CI kontrolü (Backend, Frontend) yeşil, ekip PR'ına CODEOWNER (Fehmi)
+  onayı, düz geçmiş, force push ve silme kapalı. Koruma ayarı Fehmi'ye sormadan değiştirilmez.
 - Ekip arkadaşının PR'ı Fehmi'nin açık onayı olmadan birleştirilmez; onların dalına push edilmez.
-- Not: CONTRIBUTING "main korumalı" diyor ama GitHub'da dal koruması açık değil. Yine de `main`'e doğrudan push yok.
 
 ## ⌨️ Komutlar
 
@@ -69,5 +72,5 @@ Test beklentisi testi geçirmek için değiştirilmez; klinik kural değiştiyse
 
 ## 🐞 Bilinen sorunlar
 
-- MySQL portu `3308` Refakatçim'in yerel MySQL'iyle aynı → ikisi aynı anda açılamaz → önce diğer projede
-  `docker compose stop mysql`, ya da kökteki `.env`'de `DB_PORT`'u değiştir (backend `.env`'deki `DB_PORT` de aynı olmalı).
+- Port çakışması → bu bilgisayardaki projelerin port tablosu `C:\Dev\brain\lessons\yerel-portlar.md`. FizyoPlan'ın
+  portu değiştirilmez (ekip aynı `.env.example`'ı kullanıyor); gerekirse yalnız yerel `.env`'de `DB_PORT` (kök ve backend aynı).
