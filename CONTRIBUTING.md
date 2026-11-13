@@ -6,6 +6,7 @@
   - `feature/<kisa-aciklama>` – yeni özellik (ör. `feature/egzersiz-videolari`)
   - `fix/<kisa-aciklama>` – hata düzeltme (ör. `fix/anket-yas-kontrolu`)
   - `docs/...`, `chore/...` – doküman / bakım
+  - `<isim>/<kisa-aciklama>` da olur (ör. `fehmi/exercise-videos`); Fehmi'nin dalları bu biçimde.
 
 ## Adım adım
 ```bash
