@@ -58,7 +58,7 @@ değişen sayfaya tarayıcıda bakmak (açık/koyu/yüksek kontrast temaları da
 - Klinik eşikler yalnız `backend/src/config/clinical.ts`'de (ağrı ≥ 7, zorluk ≥ 9 → plan askıya; yaş 18–75).
   Değerler taslak, uzman/danışman onayıyla güncellenecek. Kodda sabit eşik yok; eşik değişikliği Fehmi'ye sorulur.
 - Yeni egzersiz onaysız başlar; kullanıcıya yalnız uzman onayından sonra görünür.
-- API değişince `backend/API.md` güncellenir. İstek doğrulaması `validators/` altındaki zod şemalarıyla.
+- API değişince `backend/API.md` güncellenir. İstek doğrulaması `backend/src/validators/` altındaki zod şemalarıyla.
 - Renkler ve ölçüler `frontend/src/styles/` tasarım tokenlarında; erişilebilirlik tercihleri (yüksek kontrast) bozulmaz.
 
 ## 🧪 Kritik testler
