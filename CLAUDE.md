@@ -5,10 +5,10 @@
 
 ## Genel kurallar (tüm ekip)
 
-- **Dil:** kullanıcıyla Türkçe konuş, terimi ilk geçtiği yerde açıkla. "Öğret" denirse işi yapma, konuyu adım adım öğret.
+- **Dil:** kullanıcıyla Türkçe konuş, terimi ilk geçtiği yerde açıkla.
   Kullanıcının gördüğü metin Türkçe. Hata bildirirken tam konum ver: `[env.ts:12](src/config/env.ts#L12) — açıklama`.
 - **Başlarken:** işi 2-3 cümleyle söyle, dokunacağın dosyaları say, onay almadan kod yazma. 5'ten fazla dosya ya da
-  belirsiz davranış varsa önce kısa plan. Yalnız kullanıcının yapabileceği işleri (giriş, konsol ayarı) planın başında topla.
+  belirsiz davranış varsa önce kısa plan.
 - **Test:** test edilmeyen iş `main`'e girmez. "Bitti" demeden kapıları çalıştır, çıktıyı gör, kanıt göster (komut + son
   satırlar ya da ekran görüntüsü); kırmızı kontrolü çıktısıyla söyle. Geçici (doğrulama) testi iş bitince silinir.
 - **Hata ayıklama:** önce "Bilinen sorunlar"a bak, kök sebebi bul, her seferinde tek tahmin dene.
