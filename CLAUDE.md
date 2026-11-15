@@ -1,95 +1,97 @@
-# FizyoPlan — Proje kuralları
+# FizyoPlan — Project rules
 
-<!-- Ekip projesi: ortak çalışma kuralları "Genel kurallar"da, bu dosyada. Hedef <200 satır.
-     Ekip için kurulum/akış: README.md, CONTRIBUTING.md. Yol haritası: "Proje Plani.md". -->
+<!-- Team project: the shared working rules are in "General rules" in this file. Target <200 lines.
+     Setup/flow for the team: README.md, CONTRIBUTING.md. Roadmap: "Proje Plani.md". -->
 
-## Genel kurallar (tüm ekip)
+## General rules (whole team)
 
-- **Dil:** kullanıcıyla Türkçe konuş, terimi ilk geçtiği yerde açıkla.
-  Kullanıcının gördüğü metin Türkçe. Hata bildirirken tam konum ver: `[env.ts:12](src/config/env.ts#L12) — açıklama`.
-- **Başlarken:** işi 2-3 cümleyle söyle, dokunacağın dosyaları say, onay almadan kod yazma. 5'ten fazla dosya ya da
-  belirsiz davranış varsa önce kısa plan.
-- **Test:** test edilmeyen iş `main`'e girmez. "Bitti" demeden kapıları çalıştır, çıktıyı gör, kanıt göster (komut + son
-  satırlar ya da ekran görüntüsü); kırmızı kontrolü çıktısıyla söyle. Geçici (doğrulama) testi iş bitince silinir.
-- **Hata ayıklama:** önce "Bilinen sorunlar"a bak, kök sebebi bul, her seferinde tek tahmin dene.
-- **Arayüz:** onaylı tasarıma ve tasarım tokenlarına uy, ekranda sabit renk/ölçü yok. Hazır mor→mavi geçiş, neon, emoji,
-  robot/ışıltı ikonu ve varsayılan yazı tipi yok. Değişen sayfada: 375px ve masaüstü, konsolda hata yok,
-  yükleniyor/boş/hata durumları.
-- **Veritabanı:** yerelde bile `DROP`, `TRUNCATE`, `WHERE`'siz `UPDATE`/`DELETE` yok. Elle veri yazmadan önce SQL'i ve
-  etkilenecek satır sayısını göster. Uygulanmış migration düzenlenmez, değişiklik yeni migration'dır.
-- **Kırmızı çizgiler:** `.env*`, şifre, anahtar, `secrets/` commit edilmez, içeriği yazılmaz. Silmeden/üstüne yazmadan önce
-  dosyaya bak. Geri alınamayan komuttan önce tek satırda söyle: ne yapılıyor, hangi hedefte, yanlış giderse ne bozulur.
-  Yeni paket/bağımlılık ve stack değişikliği önce Fehmi'ye sorulur.
-- **Git:** commit tek satır `type: subject` (`feat fix refactor style docs chore test`), dosyalar adla eklenir (`git add -A` yok).
-  `--force`, kaydedilmiş işi `git reset --hard` ile silmek ve başkasının dalına push yok. Akış aşağıda.
+- **Language:** talk to the user in Turkish and explain a term the first time it appears. Text the user sees is Turkish.
+  When reporting an error give the exact location: `[env.ts:12](src/config/env.ts#L12) — explanation`.
+- **Starting:** say what you will do in 2-3 sentences, list the files you will touch, and do not write code without
+  approval. If more than 5 files or unclear behavior are involved, give a short plan first.
+- **Testing:** untested work does not reach `main`. Before saying "done" run the gates, read the output and show
+  evidence (command + last lines, or a screenshot); report a red check with its output. A temporary (verification)
+  test is deleted when the work is done.
+- **Debugging:** read "Known issues" first, find the root cause, try one guess at a time.
+- **UI:** follow the approved design and the design tokens, no hard-coded colors/sizes. No stock purple→blue
+  gradients, neon, emoji, robot/sparkle icons or default fonts. On a changed page: 375px and desktop, no console
+  errors, loading/empty/error states.
+- **Database:** even locally, no `DROP`, `TRUNCATE`, or `UPDATE`/`DELETE` without `WHERE`. Before writing data by hand,
+  show the SQL and the number of rows it will affect. An applied migration is never edited; a change is a new migration.
+- **Red lines:** `.env*`, passwords, keys and `secrets/` are not committed and their contents are not written out.
+  Look at a file before deleting/overwriting it. Before an irreversible command say in one line: what is being done,
+  on which target, and what breaks if it goes wrong. A new package/dependency or a stack change is asked to Fehmi first.
+- **Git:** one-line commit `type: subject` (`feat fix refactor style docs chore test`), files added by name (no
+  `git add -A`). No `--force`, no deleting saved work with `git reset --hard`, no push to someone else's branch. Flow below.
 
-## 📌 Proje
+## Project
 
-- Yaş, boy, kilo, aktivite ve ağrı bölgesine (bel, boyun, omuz, diz) göre güvenli, kişiye özel egzersiz planı
-  üreten web uygulaması. TÜBİTAK 2209-A projesi; takvim Mart–Temmuz 2027, prototip Haziran 2027.
-- **Sağlık uygulaması:** tanı koymaz. Riskli ya da değerlendirilemeyen kullanıcıya plan üretilmez, uzmana
-  yönlendirilir. Öneri yalnız uzman onaylı egzersizlerden seçilir ve klinik filtreden geçmeden kullanıcıya gitmez.
-- Ekip: Şule Nur Gül, Melisa Şakır, Fehmi Can Günay, Sümeyra Ötken; danışman Prof. Dr. Ozan Artun.
-  Repo sahibi ve CODEOWNER **Fehmi**.
-- Pano: `Proje Plani.md` (oturum başında "Nerede Kaldık?" bölümü, iş sonunda checklist güncellenir).
-  Mimari ve ekranlar: `Tasarim Plani.md`. API: `backend/API.md`.
+- A web app that produces a safe, personalized exercise plan from age, height, weight, activity and pain region
+  (lower back, neck, shoulder, knee). A TÜBİTAK 2209-A project; schedule March–July 2027, prototype June 2027.
+- **Health app:** it does not diagnose. No plan is produced for a risky or unassessable user; they are referred to a
+  specialist. Recommendations are chosen only from specialist-approved exercises and never reach the user without
+  passing the clinical filter.
+- Team: Şule Nur Gül, Melisa Şakır, Fehmi Can Günay, Sümeyra Ötken; advisor Prof. Dr. Ozan Artun.
+  Repo owner and CODEOWNER: **Fehmi**.
+- Board: `Proje Plani.md` (the "Nerede Kaldık?" (where did we stop) section at the start of a session, update the
+  checklist at the end of work). Architecture and screens: `Tasarim Plani.md`. API: `backend/API.md`.
 
-## 📦 Stack (değiştirme)
+## Stack (do not change)
 
 Backend Node 22 + Express + TypeScript + Sequelize + MySQL 8.4 + JWT/bcrypt + zod ·
-Frontend React 19 + TypeScript + Vite + React Query · Docker Compose (mysql + backend + nginx'li frontend).
-Yapay zekâ sağlayıcısı henüz seçilmedi: `AiProvider` arayüzü arkasında, şimdilik kural tabanlı.
+Frontend React 19 + TypeScript + Vite + React Query · Docker Compose (mysql + backend + frontend behind nginx).
+The AI provider is not chosen yet: it sits behind the `AiProvider` interface and is rule-based for now.
 
-## 🌐 Dil (kod içi)
+## Language (inside code)
 
-Mevcut düzene uy: isimler (değişken, fonksiyon, model) İngilizce; **kod yorumları ve API hata mesajları Türkçe**
-(ekip Türkçe okuyor). Aynı dosyada iki dil karıştırma.
+Follow the existing convention: names (variables, functions, models) are English; **code comments and API error
+messages are Turkish** (the team reads Turkish). Do not mix two languages in one file.
 
-## 🔀 Git akışı (PR ile)
+## Git flow (via PR)
 
-1. Güncel `main`'den `fehmi/<kisa-ingilizce-konu>` dalı aç; doğrulanmış parçayı commit edip dala push et (sormadan).
-2. Paket bitince `gh pr create --base main` ile PR aç; `.github/pull_request_template.md`'yi Türkçe doldur.
-   Klinik eşik/kural değişikliği (`backend/src/config/clinical.ts`) PR açıklamasında ayrıca belirtilir.
-3. `gh pr checks` yeşil olmadan birleştirme yok. Fehmi "tamam" deyince `gh pr merge --squash --admin`
-   (repoda yalnız squash açık; PR başlığı tek satır `type: subject` olur). `--admin` gerekir çünkü PR'ı yazan onaylayamaz.
-   Birleşince GitHub dalı kendisi siler (repo ayarı); yerelde `git switch main && git pull --ff-only`.
-- `main` korumalı (13 Kas 2026): PR şart, iki CI kontrolü (Backend, Frontend) yeşil, ekip PR'ına CODEOWNER (Fehmi)
-  onayı, düz geçmiş, force push ve silme kapalı. Koruma ayarı Fehmi'ye sormadan değiştirilmez.
-- Ekip arkadaşının PR'ı Fehmi'nin açık onayı olmadan birleştirilmez; onların dalına push edilmez.
+1. From an up-to-date `main` create a `fehmi/<short-english-topic>` branch; commit a verified piece and push it to the branch (without asking).
+2. When a package is done open a PR with `gh pr create --base main`; fill `.github/pull_request_template.md` in Turkish.
+   A clinical threshold/rule change (`backend/src/config/clinical.ts`) is called out separately in the PR description.
+3. No merge before `gh pr checks` is green. When Fehmi says "tamam" (ok): `gh pr merge --squash --admin`
+   (only squash is enabled in the repo; the PR title becomes the one-line `type: subject`). `--admin` is needed because the PR author cannot approve.
+   After merging, GitHub deletes the branch itself (repo setting); locally `git switch main && git pull --ff-only`.
+- `main` is protected (13 Nov 2026): a PR is required, both CI checks (Backend, Frontend) green, CODEOWNER (Fehmi)
+  approval for a team member's PR, linear history, force push and deletion disabled. The protection setting is not changed without asking Fehmi.
+- A teammate's PR is not merged without Fehmi's explicit approval; no push to their branch.
 
-## ⌨️ Komutlar
+## Commands
 
-| Yer | Komut | Ne yapar |
+| Where | Command | What it does |
 |---|---|---|
-| kök | `docker compose up -d mysql` | Yalnız veritabanı (`127.0.0.1:3308`) |
-| kök | `docker compose up -d --build` | Tam uygulama, http://localhost:8080 |
+| root | `docker compose up -d mysql` | Database only (`127.0.0.1:3308`) |
+| root | `docker compose up -d --build` | Full app, http://localhost:8080 |
 | `backend/` | `npm run dev` | API, http://localhost:4000/api |
-| `backend/` | `npm run db:seed` | Bölgeler + örnek egzersizler (+ admin) |
-| `backend/` | `npx vitest run tests/unit/riskService.test.ts` | Tek test dosyası |
+| `backend/` | `npm run db:seed` | Regions + sample exercises (+ admin) |
+| `backend/` | `npx vitest run tests/unit/riskService.test.ts` | Single test file |
 | `frontend/` | `npm run dev` | http://localhost:5173 (`/api` → 4000) |
 
-**Kapılar** (CI ile aynı): backend `npm run typecheck` + `npx tsc -p tests --noEmit` + `npm test`
-(MySQL açık olmalı, ayrı `fizyoplan_test` veritabanı) · frontend `npm run build` + `npm run lint` ·
-değişen sayfaya tarayıcıda bakmak (açık/koyu/yüksek kontrast temaları dahil).
+**Gates** (same as CI): backend `npm run typecheck` + `npx tsc -p tests --noEmit` + `npm test`
+(MySQL must be running, separate `fizyoplan_test` database) · frontend `npm run build` + `npm run lint` ·
+look at the changed page in the browser (including the light/dark/high-contrast themes).
 
-## 🔒 Kurallar (koddan çıkmayan)
+## Rules (not derivable from code)
 
-- Sağlık verisi (ağrı, hastalık, profil) loglara ve hata mesajlarına yazılmaz.
-- Klinik eşikler yalnız `backend/src/config/clinical.ts`'de (ağrı ≥ 7, zorluk ≥ 9 → plan askıya; yaş 18–75).
-  Değerler taslak, uzman/danışman onayıyla güncellenecek. Kodda sabit eşik yok; eşik değişikliği Fehmi'ye sorulur.
-- Yeni egzersiz onaysız başlar; kullanıcıya yalnız uzman onayından sonra görünür.
-- API değişince `backend/API.md` güncellenir. İstek doğrulaması `backend/src/validators/` altındaki zod şemalarıyla.
-- Renkler ve ölçüler `frontend/src/styles/` tasarım tokenlarında; erişilebilirlik tercihleri (yüksek kontrast) bozulmaz.
+- Health data (pain, illness, profile) is not written to logs or error messages.
+- Clinical thresholds live only in `backend/src/config/clinical.ts` (pain ≥ 7, difficulty ≥ 9 → plan suspended; age 18–75).
+  The values are a draft and will be updated with specialist/advisor approval. No hard-coded thresholds in code; a threshold change is asked to Fehmi.
+- A new exercise starts unapproved; it becomes visible to users only after specialist approval.
+- When the API changes, update `backend/API.md`. Request validation uses the zod schemas under `backend/src/validators/`.
+- Colors and sizes live in the design tokens in `frontend/src/styles/`; accessibility preferences (high contrast) must not break.
 
-## 🧪 Kritik testler
+## Critical tests
 
-`backend/tests/` (vitest + supertest). Bozulursa pahalı olanlar:
-- Risk değerlendirmesi: riskli kullanıcıya plan üretilmez (`riskService`).
-- Klinik filtre: onaysız ya da bölgeye uymayan egzersiz plana girmez (`clinicalFilter`).
-- Geri bildirim eşiği aşılınca plan askıya alınır (`feedback`).
-- Yetki: kullanıcı başkasının profilini/planını göremez; admin/uzman uçları rol ister (`auth`, `admin`).
-Test beklentisi testi geçirmek için değiştirilmez; klinik kural değiştiyse Fehmi onaylar.
+`backend/tests/` (vitest + supertest). Expensive when broken:
+- Risk assessment: no plan is produced for a risky user (`riskService`).
+- Clinical filter: an unapproved or region-mismatched exercise does not enter a plan (`clinicalFilter`).
+- When the feedback threshold is exceeded the plan is suspended (`feedback`).
+- Permissions: a user cannot see another user's profile/plan; admin/specialist endpoints require a role (`auth`, `admin`).
+A test expectation is not changed to make a test pass; if a clinical rule changed, Fehmi approves.
 
-## 🐞 Bilinen sorunlar
+## Known issues
 
-- Port çakışması → FizyoPlan'ın portu değiştirilmez (ekip aynı `.env.example`'ı kullanıyor); gerekirse yalnız yerel `.env`'de `DB_PORT` (kök ve backend aynı).
+- Port conflict → FizyoPlan's port is not changed (the team uses the same `.env.example`); if needed only change `DB_PORT` in the local `.env` (root and backend the same).
