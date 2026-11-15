@@ -1,7 +1,27 @@
 # FizyoPlan — Proje kuralları
 
-<!-- Ortak kurallar C:\Dev\CLAUDE.md'de; burada yalnız koddan çıkarılamayan, projeye özel olanlar durur.
+<!-- Ekip projesi: ortak çalışma kuralları "Genel kurallar"da, bu dosyada. Hedef <200 satır.
      Ekip için kurulum/akış: README.md, CONTRIBUTING.md. Yol haritası: "Proje Plani.md". -->
+
+## Genel kurallar (tüm ekip)
+
+- **Dil:** kullanıcıyla Türkçe konuş, terimi ilk geçtiği yerde açıkla.
+  Kullanıcının gördüğü metin Türkçe. Hata bildirirken tam konum ver: `[env.ts:12](src/config/env.ts#L12) — açıklama`.
+- **Başlarken:** işi 2-3 cümleyle söyle, dokunacağın dosyaları say, onay almadan kod yazma. 5'ten fazla dosya ya da
+  belirsiz davranış varsa önce kısa plan.
+- **Test:** test edilmeyen iş `main`'e girmez. "Bitti" demeden kapıları çalıştır, çıktıyı gör, kanıt göster (komut + son
+  satırlar ya da ekran görüntüsü); kırmızı kontrolü çıktısıyla söyle. Geçici (doğrulama) testi iş bitince silinir.
+- **Hata ayıklama:** önce "Bilinen sorunlar"a bak, kök sebebi bul, her seferinde tek tahmin dene.
+- **Arayüz:** onaylı tasarıma ve tasarım tokenlarına uy, ekranda sabit renk/ölçü yok. Hazır mor→mavi geçiş, neon, emoji,
+  robot/ışıltı ikonu ve varsayılan yazı tipi yok. Değişen sayfada: 375px ve masaüstü, konsolda hata yok,
+  yükleniyor/boş/hata durumları.
+- **Veritabanı:** yerelde bile `DROP`, `TRUNCATE`, `WHERE`'siz `UPDATE`/`DELETE` yok. Elle veri yazmadan önce SQL'i ve
+  etkilenecek satır sayısını göster. Uygulanmış migration düzenlenmez, değişiklik yeni migration'dır.
+- **Kırmızı çizgiler:** `.env*`, şifre, anahtar, `secrets/` commit edilmez, içeriği yazılmaz. Silmeden/üstüne yazmadan önce
+  dosyaya bak. Geri alınamayan komuttan önce tek satırda söyle: ne yapılıyor, hangi hedefte, yanlış giderse ne bozulur.
+  Yeni paket/bağımlılık ve stack değişikliği önce Fehmi'ye sorulur.
+- **Git:** commit tek satır `type: subject` (`feat fix refactor style docs chore test`), dosyalar adla eklenir (`git add -A` yok).
+  `--force`, kaydedilmiş işi `git reset --hard` ile silmek ve başkasının dalına push yok. Akış aşağıda.
 
 ## 📌 Proje
 
@@ -20,12 +40,12 @@ Backend Node 22 + Express + TypeScript + Sequelize + MySQL 8.4 + JWT/bcrypt + zo
 Frontend React 19 + TypeScript + Vite + React Query · Docker Compose (mysql + backend + nginx'li frontend).
 Yapay zekâ sağlayıcısı henüz seçilmedi: `AiProvider` arayüzü arkasında, şimdilik kural tabanlı.
 
-## 🌐 Dil (kök kuraldan istisna)
+## 🌐 Dil (kod içi)
 
 Mevcut düzene uy: isimler (değişken, fonksiyon, model) İngilizce; **kod yorumları ve API hata mesajları Türkçe**
-(ekip Türkçe okuyor). Aynı dosyada iki dil karıştırma. Commit mesajları kök kuraldaki gibi İngilizce `type: subject`.
+(ekip Türkçe okuyor). Aynı dosyada iki dil karıştırma.
 
-## 🔀 Git akışı (kök kuraldan istisna: PR ile)
+## 🔀 Git akışı (PR ile)
 
 1. Güncel `main`'den `fehmi/<kisa-ingilizce-konu>` dalı aç; doğrulanmış parçayı commit edip dala push et (sormadan).
 2. Paket bitince `gh pr create --base main` ile PR aç; `.github/pull_request_template.md`'yi Türkçe doldur.
@@ -72,5 +92,4 @@ Test beklentisi testi geçirmek için değiştirilmez; klinik kural değiştiyse
 
 ## 🐞 Bilinen sorunlar
 
-- Port çakışması → bu bilgisayardaki projelerin port tablosu `C:\Dev\brain\lessons\yerel-portlar.md`. FizyoPlan'ın
-  portu değiştirilmez (ekip aynı `.env.example`'ı kullanıyor); gerekirse yalnız yerel `.env`'de `DB_PORT` (kök ve backend aynı).
+- Port çakışması → FizyoPlan'ın portu değiştirilmez (ekip aynı `.env.example`'ı kullanıyor); gerekirse yalnız yerel `.env`'de `DB_PORT` (kök ve backend aynı).
