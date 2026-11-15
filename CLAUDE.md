@@ -23,7 +23,7 @@ Yapay zekâ sağlayıcısı henüz seçilmedi: `AiProvider` arayüzü arkasında
 ## 🌐 Dil (kök kuraldan istisna)
 
 Mevcut düzene uy: isimler (değişken, fonksiyon, model) İngilizce; **kod yorumları ve API hata mesajları Türkçe**
-(ekip Türkçe okuyor). Aynı dosyada iki dil karıştırma. Commit mesajları kök kuraldaki gibi İngilizce `type: subject`.
+(ekip Türkçe okuyor). Aynı dosyada iki dil karıştırma.
 
 ## 🔀 Git akışı (kök kuraldan istisna: PR ile)
 
